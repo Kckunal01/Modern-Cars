@@ -1,6 +1,7 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js",
   "/seat-covers/page": "app/seat-covers/page.js",
-  "/seat-covers/stealth/page": "app/seat-covers/stealth/page.js"
+  "/seat-covers/stealth/page": "app/seat-covers/stealth/page.js",
+  "/about/page": "app/about/page.js",
+  "/checkout/page": "app/checkout/page.js"
 }

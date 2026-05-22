@@ -21,6 +21,16 @@
       "static/chunks/main-app.js",
       "static/css/app/seat-covers/stealth/page.css",
       "static/chunks/app/seat-covers/stealth/page.js"
+    ],
+    "/about/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/about/page.js"
+    ],
+    "/checkout/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/checkout/page.js"
     ]
   }
 }
