@@ -47,22 +47,58 @@
   min-height: 100vh;
 }
 
-/* Hero Carousel — 3 images visible at once with prev/next arrows */
-.id-hero-carousel {
+.id-hero-carousel-3up {
   position: relative;
-  width: 100%;
-  height: 85vh;
-  min-height: 520px;
-  overflow: hidden;
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  width: 100%;
+  height: 60vh;
+  min-height: 400px;
+  background: var(--bg-primary);
+  overflow: hidden;
 }
 
-.id-hero-track {
+.carousel-track {
   display: flex;
   width: 100%;
   height: 100%;
-  transition: transform 0.5s ease;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+}
+.carousel-track::-webkit-scrollbar { display: none; }
+
+.carousel-slide {
+  flex: 0 0 calc(100% / 3);
+  height: 100%;
+  object-fit: cover;
+  scroll-snap-align: start;
+}
+
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+.carousel-nav-btn:hover { background: rgba(0,0,0,0.8); }
+.carousel-nav-btn.prev { left: 16px; }
+.carousel-nav-btn.next { right: 16px; }
+
+@media (max-width: 900px) {
+  .carousel-slide { flex: 0 0 100%; }
 }
 
 .id-hero-slide {
@@ -244,13 +280,13 @@
   width: 100%;
   border-radius: 8px;
   overflow: hidden;
-  height: 420px;
+  height: auto;
 }
 
 .id-cabin-image img,
 .id-cabin-image > * {
   width: 100%;
-  height: 100%;
+  height: auto;
   object-fit: contain;
   display: block;
   border-radius: 8px;

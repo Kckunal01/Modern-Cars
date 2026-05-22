@@ -31,6 +31,34 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/checkout/page.js"
+    ],
+    "/privacy-policy/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/privacy-policy/page.js"
+    ],
+    "/installation/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/installation/page.js"
+    ],
+    "/seat-covers/signature/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/seat-covers/signature/page.css",
+      "static/chunks/app/seat-covers/signature/page.js"
+    ],
+    "/seat-covers/vintage/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/seat-covers/vintage/page.css",
+      "static/chunks/app/seat-covers/vintage/page.js"
+    ],
+    "/seat-covers/minimal/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/seat-covers/minimal/page.css",
+      "static/chunks/app/seat-covers/minimal/page.js"
     ]
   }
 }

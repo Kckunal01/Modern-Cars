@@ -226,8 +226,8 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: '1px solid #eee', borderRadius: '8px', marginBottom: '12px', cursor: 'pointer', backgroundColor: paymentMethod === 'online' ? '#fafafa' : '#fff' }}>
                   <input type="radio" name="paymentMethod" value="online" checked={paymentMethod === 'online'} onChange={() => setPaymentMethod('online')} style={{ accentColor: 'var(--accent-red)' }} />
                   <div>
-                    <div style={{ fontWeight: 600 }}>Pay Online</div>
-                    <div style={{ fontSize: '0.8rem', color: '#888' }}>UPI, Cards, NetBanking</div>
+                    <div style={{ fontWeight: 600 }}>Razorpay</div>
+                    <div style={{ fontSize: '0.8rem', color: '#888' }}>Cards, UPI, NetBanking, Wallets</div>
                   </div>
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '16px', border: '1px solid #eee', borderRadius: '8px', cursor: 'pointer', backgroundColor: paymentMethod === 'cod' ? '#fafafa' : '#fff' }}>
@@ -276,15 +276,8 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
                 <strong style={{ fontSize: '1.15rem' }}>₹ {paymentMethod === 'cod' ? '500' : total.toLocaleString()}</strong>
               </div>
 
-              <button className="btn" style={{ width: '100%', padding: '16px', marginTop: '24px', backgroundColor: '#FFC439', color: '#003087', fontWeight: 700, borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handlePlaceOrder} disabled={isSubmitting}>
-                {isSubmitting ? 'PROCESSING...' : (
-                  <>
-                    <svg viewBox="0 0 200 50" width="80" height="20">
-                      <path d="M57.6 12.3c-2.4-5.3-6.4-8-12-8h-23c-1.3 0-2.4.9-2.6 2.2l-7.3 45.4c-.1.7.5 1.3 1.2 1.3h10.9c1.1 0 2.1-.8 2.3-1.9l2.4-15c.3-1.6 1.7-2.8 3.3-2.8h4.5c9.2 0 16.3-4.5 18.6-13.3 1-3.6.8-6.1-1.7-7.9zM42.2 25.8c-1.2 3.6-5.4 3.6-9.1 3.6h-3.6l1.7-10.4h4.4c2.8 0 5.4.1 6.5 1.8.8 1.1.9 3.1.1 5z" fill="#003087"/>
-                      <path d="M99.6 12.3c-2.4-5.3-6.4-8-12-8H64.7c-1.3 0-2.4.9-2.6 2.2l-7.3 45.4c-.1.7.5 1.3 1.2 1.3h10.9c1.1 0 2.1-.8 2.3-1.9l2.4-15c.3-1.6 1.7-2.8 3.3-2.8h4.5c9.2 0 16.3-4.5 18.6-13.3 1-3.6.8-6.1-1.7-7.9zM84.2 25.8c-1.2 3.6-5.4 3.6-9.1 3.6h-3.6l1.7-10.4h4.4c2.8 0 5.4.1 6.5 1.8.8 1.1.9 3.1.1 5z" fill="#009CDE"/>
-                    </svg> Checkout
-                  </>
-                )}
+              <button className="btn" style={{ width: '100%', padding: '16px', marginTop: '24px', backgroundColor: paymentMethod === 'online' ? '#3395FF' : '#FFC439', color: paymentMethod === 'online' ? '#fff' : '#003087', fontWeight: 700, borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handlePlaceOrder} disabled={isSubmitting}>
+                {isSubmitting ? 'PROCESSING...' : (paymentMethod === 'online' ? 'Pay with Razorpay' : 'Confirm Order (COD)')}
               </button>
               <p style={{ textAlign: 'center', fontSize: '0.72rem', color: '#999', marginTop: '12px' }}>🔒 Secure 256-bit SSL encryption</p>
             </div>

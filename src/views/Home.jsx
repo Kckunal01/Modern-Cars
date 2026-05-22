@@ -199,6 +199,7 @@ export default function Home() {
       </section>
 
       <style>{`
+        h3 { font-size: 1.5rem; }
         /* Hero */
         .hero-section {
           padding: 90px 0 40px;

@@ -9,14 +9,16 @@ import { carBrands, getPrice } from '../data/carData';
 export default function IdentityStealth() {
   const router = useRouter();
   const { setSelectedIdentity } = useAppContext();
-  const [currentSlide, setCurrentSlide] = useState(0);
   const slides = ['/Assets/S1.png', '/Assets/S2.png', '/Assets/S3.png', '/Assets/S4.png'];
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [slides.length]);
+  const trackRef = React.useRef(null);
+  
+  const scrollLeft = () => {
+    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth / 3, behavior: 'smooth' });
+  };
+  
+  const scrollRight = () => {
+    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth / 3, behavior: 'smooth' });
+  };
 
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
@@ -81,21 +83,14 @@ export default function IdentityStealth() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
       
-      {/* Hero */}
-      <section className="id-hero-carousel">
-        {slides.map((src, index) => (
-          <img key={index} src={src} alt={`Stealth ${index}`} className={`id-hero-slide ${index === currentSlide ? 'active' : ''}`} />
-        ))}
-        <div className="id-hero-overlay-arrow" onClick={() => router.push('/seat-covers')}>
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6" />
-          </svg>
-        </div>
-        <div className="id-hero-indicators">
-          {slides.map((_, i) => (
-            <div key={i} className={`id-indicator ${i === currentSlide ? 'active' : ''}`} />
+      <section className="id-hero-carousel-3up">
+        <button className="carousel-nav-btn prev" onClick={scrollLeft}>‹</button>
+        <div className="carousel-track" ref={trackRef}>
+          {slides.map((src, index) => (
+            <img key={index} src={src} alt={`Stealth ${index + 1}`} className="carousel-slide" />
           ))}
         </div>
+        <button className="carousel-nav-btn next" onClick={scrollRight}>›</button>
       </section>
 
       {/* Header */}
@@ -136,7 +131,7 @@ export default function IdentityStealth() {
           </div>
         </div>
         <div className="id-cabin-image">
-          <Image src="/Assets/Stealth.png" alt="Stealth Cabin" width={600} height={400} style={{ width: '100%', borderRadius: '8px', objectFit: 'cover' }} />
+          <img src="/Assets/Stealth.png" alt="Stealth Cabin" />
         </div>
       </section>
 

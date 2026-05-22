@@ -1,7 +1,9 @@
 {
   "/page": "app/page.js",
-  "/seat-covers/page": "app/seat-covers/page.js",
   "/seat-covers/stealth/page": "app/seat-covers/stealth/page.js",
-  "/about/page": "app/about/page.js",
-  "/checkout/page": "app/checkout/page.js"
+  "/seat-covers/page": "app/seat-covers/page.js",
+  "/seat-covers/signature/page": "app/seat-covers/signature/page.js",
+  "/seat-covers/vintage/page": "app/seat-covers/vintage/page.js",
+  "/seat-covers/minimal/page": "app/seat-covers/minimal/page.js",
+  "/installation/page": "app/installation/page.js"
 }

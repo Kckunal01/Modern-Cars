@@ -23,18 +23,12 @@ export default function IdentityMinimal() {
   const price = (brand && model) ? getPrice('minimal', brand, model) : 8999;
 
 
-  const slideWidth = () => trackRef.current ? trackRef.current.offsetWidth / 3 : 0;
-
-  const handlePrev = () => {
-    const newIdx = slideIndex === 0 ? slides.length - 1 : slideIndex - 1;
-    setSlideIndex(newIdx);
-    if (trackRef.current) trackRef.current.style.transform = `translateX(-${newIdx * slideWidth()}px)`;
+  const scrollLeft = () => {
+    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth / 3, behavior: 'smooth' });
   };
-
-  const handleNext = () => {
-    const newIdx = (slideIndex + 1) % slides.length;
-    setSlideIndex(newIdx);
-    if (trackRef.current) trackRef.current.style.transform = `translateX(-${newIdx * slideWidth()}px)`;
+  
+  const scrollRight = () => {
+    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth / 3, behavior: 'smooth' });
   };
 
   const handleCheckout = () => {
@@ -52,15 +46,14 @@ export default function IdentityMinimal() {
   return (
     <div className="identity-page-wrapper theme-minimal" style={{ paddingTop: '72px' }}>
       
-      {/* Hero — 3 images visible at once */}
-      <section className="id-hero-carousel">
-        <div className="id-hero-track" ref={trackRef}>
+      <section className="id-hero-carousel-3up">
+        <button className="carousel-nav-btn prev" onClick={scrollLeft}>‹</button>
+        <div className="carousel-track" ref={trackRef}>
           {slides.map((src, index) => (
-            <img key={index} src={src} alt={`Minimal ${index + 1}`} className="id-hero-slide" />
+            <img key={index} src={src} alt={`Minimal ${index + 1}`} className="carousel-slide" />
           ))}
         </div>
-        <button className="id-hero-nav-btn prev" onClick={handlePrev} aria-label="Previous">&#8249;</button>
-        <button className="id-hero-nav-btn next" onClick={handleNext} aria-label="Next">&#8250;</button>
+        <button className="carousel-nav-btn next" onClick={scrollRight}>›</button>
       </section>
 
       {/* Header */}
