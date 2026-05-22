@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="100%">
+  <!-- Definition for modern, clean font elements -->
+  <style>
+    .brand-m {
+      fill: #E53935;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+    }
+    .brand-c {
+      fill: #111111;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+    }
+  </style>
+  
+  <!-- Modern Cars Geometric Symbol -->
+  <g transform="translate(100, 20)">
+    <!-- Red M -->
+    <path d="M 50 320 L 50 80 L 120 80 L 190 200 L 260 80 L 330 80 L 330 320 L 270 320 L 270 170 L 195 290 L 185 290 L 110 170 L 110 320 Z" fill="#E53935" />
+    <!-- Black C -->
+    <path d="M 580 145 C 550 90 490 80 430 80 C 330 80 270 160 270 200 C 270 240 330 320 430 320 C 490 320 550 310 580 255 L 580 320 L 600 320 L 600 80 L 580 80 Z" fill="#111111" style="display: none;" />
+    <!-- Let's construct a pixel perfect C that intersects or sits neatly next to the M. 
+         Wait, let's look at the uploaded image:
+         The M has straight outer edges, the inner dip goes about halfway down.
+         The C is a clean circle arc, with a flat cut-off at the top and bottom.
+         Let's write direct, precise geometric path data for BOTH M and C to look identical to the image.
+    -->
+  </g>
+  
+  <!-- Let's render using text using the exact Outfit geometric font or drawing it explicitly.
+       Drawing explicitly is best because it guarantees rendering even if fonts fail to load.
+       Let's analyze the image:
+       - The letter M consists of:
+         - Left vertical pillar
+         - Right vertical pillar
+         - Center dip forming a V shape
+         - The dip starts at the top corners and goes down to a sharp point in the exact center.
+       - The letter C consists of:
+         - An outer circle and an inner circle, cut off on the right.
+         - The outer circle diameter matches the height of the M.
+         - The thickness of the C matches the thickness of the M's pillars.
+       Let's define precise paths:
+  -->
+  <g transform="translate(50, 0)">
+    <!-- Premium Red M -->
+    <!-- Pillars and diagonals are clean and solid -->
+    <path d="M 100,100 L 152,100 L 220,185 L 288,100 L 340,100 L 340,300 L 288,300 L 288,180 L 220,265 L 152,180 L 152,300 L 100,300 Z" fill="#FF3B30" />
+    
+    <!-- Premium Black C -->
+    <!-- Perfect geometric C matching the height and weight of the M -->
+    <path d="M 490,100 C 430,100 380,150 380,200 C 380,250 430,300 490,300 C 530,300 560,275 570,250 L 518,250 C 510,258 502,262 490,262 C 455,262 432,235 432,200 C 432,165 455,138 490,138 C 502,138 510,142 518,150 L 570,150 C 560,125 530,100 490,100 Z" fill="#111111" />
+  </g>
+</svg>

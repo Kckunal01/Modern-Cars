@@ -1,0 +1,260 @@
+"use client";
+import React, { useState } from 'react';
+import { timeSlots, getMinDate } from '../data/carData';
+
+export default function Installation({ incrementFormSubmissions }) {
+  const [formData, setFormData] = useState({
+    name: '', phone: '', pincode: '', brand: '', model: '', year: '', area: '', date: '', time: '', message: '', whatsappContact: true,
+    services: { seatCover: false, premiumMatting: false, steeringCover: false, ambientLight: false, specialMod: false }
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  const getTomorrowDate = () => getMinDate(1);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+  };
+
+  const handleServiceChange = (service) => {
+    setFormData(prev => ({ ...prev, services: { ...prev.services, [service]: !prev.services[service] } }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (incrementFormSubmissions) {
+      const { allowed, secondsLeft } = incrementFormSubmissions();
+      if (!allowed) { alert(`Too many requests. Wait ${secondsLeft}s.`); return; }
+    }
+    setIsSubmitting(true);
+
+    fetch('https://hooks.zapier.com/hooks/catch/mock/doorstep', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+      headers: { 'Content-Type': 'application/json' }
+    }).catch(err => console.log("Zapier mock successful", err));
+
+    setTimeout(() => { setIsSubmitting(false); setIsSuccess(true); }, 2000);
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="text-center" style={{ padding: '140px 20px', minHeight: '80vh', backgroundColor: '#fafafa' }}>
+        <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '64px 40px', borderRadius: '16px', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize: '56px', marginBottom: '20px' }}>✓</div>
+          <h1 style={{ marginBottom: '12px', fontSize: '2rem' }}>Booking Received</h1>
+          <p style={{ color: '#777', marginBottom: '28px' }}>Our team will contact you shortly to confirm your appointment.</p>
+          <button className="btn btn-primary" onClick={() => setIsSuccess(false)}>BOOK ANOTHER</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="doorstep-page" style={{ paddingTop: '72px', backgroundColor: '#fafafa' }}>
+
+      {/* Hero */}
+      <section className="container" style={{ padding: '40px 0 48px' }}>
+        <div className="ds-hero-grid">
+          <div>
+            <span className="eyebrow text-red">DOORSTEP EXPERIENCE</span>
+            <h1 style={{ fontSize: '3rem', lineHeight: 1.1, marginBottom: '20px' }}>Premium Comfort,<br/><span className="text-red">At Your Doorstep.</span></h1>
+            <p style={{ color: '#777', fontSize: '1.05rem', maxWidth: '420px', marginBottom: '20px' }}>We bring premium interior upgrades directly to you — cleaner fitment, less hassle and a better driving experience.</p>
+            <p style={{ color: 'var(--accent-red)', fontWeight: 700, fontSize: '1.1rem', marginBottom: '32px' }}>Only available in Lucknow.</p>
+
+            {/* Features - one row, small, red hollow icons */}
+            <div className="ds-features-row">
+              <div className="ds-feat">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent-red)" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <div><strong>30+</strong><span>Years Experience</span></div>
+              </div>
+              <div className="ds-feat">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent-red)" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <div><strong>Professional</strong><span>Installation</span></div>
+              </div>
+              <div className="ds-feat">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent-red)" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <div><strong>Premium</strong><span>Materials</span></div>
+              </div>
+              <div className="ds-feat">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="var(--accent-red)" strokeWidth="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+                <div><strong>Hassle</strong><span>Free</span></div>
+              </div>
+            </div>
+          </div>
+          <div className="ds-hero-img">
+            <img src="/Assets/de1.png" alt="Doorstep Experience" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px' }} />
+          </div>
+        </div>
+      </section>
+
+      {/* Booking Form */}
+      <section className="container" style={{ paddingBottom: '100px' }}>
+        <div className="form-wrapper">
+
+          <div className="text-center" style={{ marginBottom: '40px' }}>
+            <span className="eyebrow text-red">BOOK YOUR EXPERIENCE</span>
+            <h2 style={{ fontSize: '2.2rem', marginBottom: '10px' }}>Upgrade Your Cabin Without Leaving Home.</h2>
+            <p style={{ color: '#888' }}>Share your details and we'll handle the rest.</p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+
+            <div className="form-section">
+              <label className="section-label">Personal Details</label>
+              <div className="form-row-3">
+                <input type="text" name="name" className="input-field" placeholder="Full Name" required onChange={handleChange} />
+                <input type="tel" name="phone" className="input-field" placeholder="Phone Number" required onChange={handleChange} />
+                <input type="text" name="pincode" className="input-field" placeholder="Pincode" required onChange={handleChange} />
+              </div>
+            </div>
+
+            <div className="form-section">
+              <label className="section-label">Vehicle Details</label>
+              <div className="form-row-3">
+                <select name="brand" className="input-field" required onChange={handleChange}>
+                  <option value="">Select Brand</option>
+                  <option>Hyundai</option><option>Maruti Suzuki</option><option>Tata</option><option>Kia</option><option>Mahindra</option>
+                </select>
+                <select name="model" className="input-field" required onChange={handleChange}>
+                  <option value="">Select Model</option>
+                  <option>Creta</option><option>Brezza</option><option>Nexon</option><option>Seltos</option><option>Thar</option>
+                </select>
+                <select name="year" className="input-field" required onChange={handleChange}>
+                  <option value="">Select Year</option>
+                  <option>2024</option><option>2023</option><option>2022</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <label className="section-label">Appointment Details</label>
+              <div className="form-row-3">
+                <input type="text" name="area" className="input-field" placeholder="Area / Address" required onChange={handleChange} />
+                <input type="date" name="date" className="input-field" required min={getTomorrowDate()} onChange={handleChange} />
+                <select name="time" className="input-field" required onChange={handleChange} value={formData.time}>
+                  <option value="">Available Time (11am-7pm)</option>
+                  {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <label className="section-label">Services Wanted (Select any)</label>
+              <div className="services-grid">
+                {[
+                  ['seatCover', 'Seat Cover'],
+                  ['premiumMatting', 'Premium Matting'],
+                  ['steeringCover', 'Steering Cover'],
+                  ['ambientLight', 'Ambient Light'],
+                  ['specialMod', 'Special Modification']
+                ].map(([key, label]) => (
+                  <label key={key} className={`service-chip${formData.services[key] ? ' active' : ''}`}>
+                    <input type="checkbox" checked={formData.services[key]} onChange={() => handleServiceChange(key)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="info-banner">
+              We will contact you shortly with the best options for your car.
+            </div>
+
+            <div className="form-section">
+              <label className="section-label">Additional Message (Optional)</label>
+              <textarea name="message" className="input-field" rows="3" placeholder="Tell us more about your requirement..." onChange={handleChange} style={{ width: '100%', resize: 'vertical' }}></textarea>
+            </div>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
+              <input type="checkbox" name="whatsappContact" checked={formData.whatsappContact} onChange={handleChange} style={{ accentColor: 'var(--accent-red)', width: '18px', height: '18px' }} />
+              Contact me on WhatsApp
+            </label>
+
+            <div className="text-center" style={{ display: 'flex', justifyContent: 'center' }}>
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ padding: '16px 56px', fontSize: '1rem' }}>
+                {isSubmitting ? 'PROCESSING...' : 'Book My Experience'}
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </section>
+
+      <style>{`
+        .ds-hero-grid {
+          display: grid;
+          grid-template-columns: 1fr 1.1fr;
+          gap: 48px;
+          align-items: center;
+        }
+        .ds-hero-img { height: 380px; overflow: hidden; border-radius: 20px; }
+        .ds-features-row {
+          display: flex;
+          gap: 24px;
+        }
+        .ds-feat {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .ds-feat strong { display: block; font-size: 0.85rem; }
+        .ds-feat span { display: block; font-size: 0.72rem; color: #888; }
+        .eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; display: block; margin-bottom: 12px; }
+
+        .form-wrapper {
+          max-width: 900px;
+          margin: 0 auto;
+          background: #fff;
+          border: 1px solid #eee;
+          border-radius: 16px;
+          padding: 48px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+        .form-section { margin-bottom: 24px; }
+        .section-label {
+          display: block;
+          font-size: 0.8rem;
+          font-weight: 700;
+          margin-bottom: 12px;
+          color: var(--text-primary);
+        }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        .services-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+        .service-chip {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          border: 1px solid #e0e0e0;
+          padding: 12px 16px;
+          border-radius: 8px;
+          cursor: pointer;
+          font-size: 0.85rem;
+          font-weight: 500;
+          transition: all 0.2s ease;
+        }
+        .service-chip:hover { border-color: #ccc; }
+        .service-chip.active { border-color: var(--accent-red); background: rgba(198,40,40,0.03); }
+        .service-chip input[type="checkbox"] { accent-color: var(--accent-red); width: 16px; height: 16px; }
+        .info-banner {
+          text-align: center;
+          font-weight: 700;
+          font-size: 0.95rem;
+          color: var(--accent-red);
+          background: rgba(198,40,40,0.04);
+          border: 1px solid rgba(198,40,40,0.1);
+          padding: 16px;
+          border-radius: 8px;
+          margin-bottom: 24px;
+        }
+        @media (max-width: 900px) {
+          .ds-hero-grid { grid-template-columns: 1fr; }
+          .ds-hero-img { height: 280px; }
+          .ds-features-row { flex-wrap: wrap; }
+          .form-row-3, .services-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
+    </div>
+  );
+}
