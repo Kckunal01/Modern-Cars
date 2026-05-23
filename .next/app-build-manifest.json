@@ -6,59 +6,25 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
-    ],
-    "/seat-covers/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/seat-covers/page.js"
-    ],
-    "/seat-covers/stealth/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/seat-covers/stealth/page.css",
-      "static/chunks/app/seat-covers/stealth/page.js"
-    ],
-    "/about/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/about/page.js"
-    ],
     "/checkout/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/checkout/page.js"
     ],
-    "/privacy-policy/page": [
+    "/track-order/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/privacy-policy/page.js"
+      "static/chunks/app/track-order/page.js"
     ],
     "/installation/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/installation/page.js"
     ],
-    "/seat-covers/signature/page": [
+    "/api/booking/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/seat-covers/signature/page.css",
-      "static/chunks/app/seat-covers/signature/page.js"
-    ],
-    "/seat-covers/vintage/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/seat-covers/vintage/page.css",
-      "static/chunks/app/seat-covers/vintage/page.js"
-    ],
-    "/seat-covers/minimal/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/seat-covers/minimal/page.css",
-      "static/chunks/app/seat-covers/minimal/page.js"
+      "static/chunks/app/api/booking/route.js"
     ]
   }
 }
