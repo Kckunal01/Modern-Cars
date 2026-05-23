@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { timeSlots, getMinDate } from '../data/carData';
+import { timeSlots, getMinDate, carBrands } from '../data/carData';
 
 export default function Installation({ incrementFormSubmissions }) {
   const [formData, setFormData] = useState({
@@ -9,33 +9,61 @@ export default function Installation({ incrementFormSubmissions }) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState(null);
+
+  const brands = Object.keys(carBrands);
+  const models = formData.brand ? Object.keys(carBrands[formData.brand].models) : [];
+  const years = (formData.brand && formData.model && carBrands[formData.brand].models[formData.model]) 
+    ? carBrands[formData.brand].models[formData.model].years 
+    : [];
 
   const getTomorrowDate = () => getMinDate(1);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setFormData(prev => {
+      const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
+      if (name === 'brand') { next.model = ''; next.year = ''; }
+      if (name === 'model') { next.year = ''; }
+      return next;
+    });
+    if (error) setError(null);
   };
 
   const handleServiceChange = (service) => {
     setFormData(prev => ({ ...prev, services: { ...prev.services, [service]: !prev.services[service] } }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (incrementFormSubmissions) {
       const { allowed, secondsLeft } = incrementFormSubmissions();
       if (!allowed) { alert(`Too many requests. Wait ${secondsLeft}s.`); return; }
     }
     setIsSubmitting(true);
+    setError(null);
 
-    fetch('https://hooks.zapier.com/hooks/catch/mock/doorstep', {
-      method: 'POST',
-      body: JSON.stringify(formData),
-      headers: { 'Content-Type': 'application/json' }
-    }).catch(err => console.log("Zapier mock successful", err));
-
-    setTimeout(() => { setIsSubmitting(false); setIsSuccess(true); }, 2000);
+    try {
+      const res = await fetch('/api/booking', {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        setIsSubmitting(false);
+        setIsSuccess(true);
+      } else {
+        setIsSubmitting(false);
+        console.error("Supabase Booking Insert Failed:", data);
+        setError(data.message || 'Failed to submit booking. Please try again.');
+      }
+    } catch (err) {
+      console.error("Booking API error:", err);
+      setIsSubmitting(false);
+      setError('Network error. Please try again later.');
+    }
   };
 
   if (isSuccess) {
@@ -101,6 +129,12 @@ export default function Installation({ incrementFormSubmissions }) {
 
           <form onSubmit={handleSubmit}>
 
+            {error && (
+              <div style={{ backgroundColor: '#ffebee', color: '#c62828', padding: '12px', borderRadius: '8px', marginBottom: '24px', fontWeight: '600', fontSize: '0.9rem' }}>
+                {error}
+              </div>
+            )}
+
             <div className="form-section">
               <label className="section-label">Personal Details</label>
               <div className="form-row-3">
@@ -113,17 +147,17 @@ export default function Installation({ incrementFormSubmissions }) {
             <div className="form-section">
               <label className="section-label">Vehicle Details</label>
               <div className="form-row-3">
-                <select name="brand" className="input-field" required onChange={handleChange}>
+                <select name="brand" className="input-field" required value={formData.brand} onChange={handleChange}>
                   <option value="">Select Brand</option>
-                  <option>Hyundai</option><option>Maruti Suzuki</option><option>Tata</option><option>Kia</option><option>Mahindra</option>
+                  {brands.map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
-                <select name="model" className="input-field" required onChange={handleChange}>
+                <select name="model" className="input-field" required value={formData.model} onChange={handleChange} disabled={!formData.brand}>
                   <option value="">Select Model</option>
-                  <option>Creta</option><option>Brezza</option><option>Nexon</option><option>Seltos</option><option>Thar</option>
+                  {models.map(m => <option key={m} value={m}>{m}</option>)}
                 </select>
-                <select name="year" className="input-field" required onChange={handleChange}>
+                <select name="year" className="input-field" required value={formData.year} onChange={handleChange} disabled={!formData.model}>
                   <option value="">Select Year</option>
-                  <option>2024</option><option>2023</option><option>2022</option>
+                  {years.map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
               </div>
             </div>

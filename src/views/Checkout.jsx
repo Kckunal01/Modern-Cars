@@ -80,16 +80,26 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
 
     // Backend API (Vercel Serverless Function)
     try {
-      await fetch('/api/order', {
+      const res = await fetch('/api/order', {
         method: 'POST',
         body: JSON.stringify(orderPayload),
         headers: { 'Content-Type': 'application/json' }
       });
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        setIsSubmitting(false);
+        setOrderComplete(true);
+      } else {
+        setIsSubmitting(false);
+        console.error("Supabase Order Insert Failed:", data);
+        setErrors({ submit: data.message || 'Failed to place order. Please try again.' });
+      }
     } catch (err) {
-      console.log("Order API error", err);
+      console.error("Order API error:", err);
+      setIsSubmitting(false);
+      setErrors({ submit: 'Network error. Please try again later.' });
     }
-
-    setTimeout(() => { setIsSubmitting(false); setOrderComplete(true); }, 2000);
   };
 
   const handleChange = (e) => {
@@ -138,6 +148,11 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
           <div>
             <form onSubmit={handlePlaceOrder}>
 
+              {errors.submit && (
+                <div style={{ backgroundColor: '#ffebee', color: '#c62828', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontWeight: '600', fontSize: '0.9rem' }}>
+                  {errors.submit}
+                </div>
+              )}
               {/* Contact Info */}
               <div className="form-card">
                 <h3 className="form-card-title">Contact Information</h3>

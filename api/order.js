@@ -1,11 +1,4 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-
-// Note: SQLite on Vercel Serverless Functions is ephemeral. 
-// Data will be wiped on cold starts/new deployments.
-// A permanent database like Turso, Supabase, or Vercel Postgres is recommended for production.
-
-const dbPath = path.join(process.cwd(), 'orders.db');
+import { supabaseServer } from '../lib/supabase.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -13,79 +6,90 @@ export default async function handler(req, res) {
   }
 
   try {
-    const db = new Database(dbPath);
+    const {
+      name, phone, address, pincode, city, state, addDoorstep,
+      doorstepDate, doorstepTime, identity, brand, model, year,
+      total, paymentMethod
+    } = req.body;
 
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS orders (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        phone TEXT,
-        address TEXT,
-        pincode TEXT,
-        city TEXT,
-        state TEXT,
-        addDoorstep INTEGER,
-        doorstepDate TEXT,
-        doorstepTime TEXT,
-        identity TEXT,
-        brand TEXT,
-        model TEXT,
-        year TEXT,
-        baseFare INTEGER,
-        discount INTEGER,
-        total INTEGER,
-        paymentMethod TEXT,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
+    console.log("Received order payload:", req.body);
 
-    const stmt = db.prepare(`
-      INSERT INTO orders (
-        name, phone, address, pincode, city, state, addDoorstep,
-        doorstepDate, doorstepTime, identity, brand, model, year,
-        baseFare, discount, total, paymentMethod
-      ) VALUES (
-        @name, @phone, @address, @pincode, @city, @state, @addDoorstep,
-        @doorstepDate, @doorstepTime, @identity, @brand, @model, @year,
-        @baseFare, @discount, @total, @paymentMethod
-      )
-    `);
+    // 1. Insert Customer
+    const fullAddressCity = `${city || ''}, ${state || ''} - ${pincode || ''}\n${address || ''}`.trim();
+    const carModelStr = `${brand || ''} ${model || ''} ${year || ''}`.trim();
 
-    const info = stmt.run({
-      name: req.body.name,
-      phone: req.body.phone,
-      address: req.body.address,
-      pincode: req.body.pincode,
-      city: req.body.city,
-      state: req.body.state,
-      addDoorstep: req.body.addDoorstep ? 1 : 0,
-      doorstepDate: req.body.doorstepDate,
-      doorstepTime: req.body.doorstepTime,
-      identity: req.body.identity,
-      brand: req.body.brand,
-      model: req.body.model,
-      year: req.body.year,
-      baseFare: req.body.baseFare,
-      discount: req.body.discount,
-      total: req.body.total,
-      paymentMethod: req.body.paymentMethod
-    });
+    const customerPayload = {
+      full_name: name || 'Guest',
+      phone: phone || '',
+      email: null, // email not currently collected in checkout
+      city: fullAddressCity,
+      car_model: carModelStr
+    };
+    
+    console.log("Mapped customer payload:", customerPayload);
 
-    // Zapier Webhook
-    const zapierUrl = 'https://hooks.zapier.com/hooks/catch/12345/abcdef/'; // Replace with actual Webhook
-    try {
-      await fetch(zapierUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...req.body, orderId: info.lastInsertRowid })
-      });
-    } catch (err) {
-      console.error('Zapier Webhook Failed:', err);
+    const { data: customerData, error: customerError } = await supabaseServer
+      .from('customers')
+      .insert([customerPayload])
+      .select()
+      .single();
+
+    if (customerError) {
+      console.error("Supabase customer insert error:", customerError);
+      return res.status(500).json({ success: false, message: 'Failed to save customer details.', error: customerError.message });
     }
 
-    res.status(200).json({ success: true, orderId: info.lastInsertRowid });
+    const customerId = customerData.id;
+
+    // 2. Insert Order
+    const orderIdStr = 'MC' + Math.floor(1000 + Math.random() * 9000);
+    const orderPayload = {
+      customer_id: customerId,
+      order_id: orderIdStr,
+      amount: total || 0,
+      payment_status: paymentMethod === 'online' ? 'paid' : 'pending',
+      tracking_id: null,
+      order_type: identity || 'Seat Cover'
+    };
+
+    console.log("Mapped order payload:", orderPayload);
+
+    const { data: orderData, error: orderError } = await supabaseServer
+      .from('orders')
+      .insert([orderPayload])
+      .select()
+      .single();
+
+    if (orderError) {
+      console.error("Supabase order insert error:", orderError);
+      return res.status(500).json({ success: false, message: 'Failed to save order details.', error: orderError.message });
+    }
+
+    // 3. Optional: Insert Booking if Doorstep selected
+    if (addDoorstep && doorstepDate && doorstepTime) {
+      const bookingPayload = {
+        customer_id: customerId,
+        service_name: `Doorstep Experience - ${identity || 'Seat Cover'}`,
+        booking_date: `${doorstepDate} ${doorstepTime}`,
+        status: 'pending'
+      };
+
+      console.log("Mapped booking payload:", bookingPayload);
+
+      const { error: bookingError } = await supabaseServer
+        .from('bookings')
+        .insert([bookingPayload]);
+
+      if (bookingError) {
+        console.error("Supabase booking insert error:", bookingError);
+        // We do not fail the whole order if booking fails, just log it, but ideally we should.
+      }
+    }
+
+    console.log("Order successfully created:", orderIdStr);
+    return res.status(200).json({ success: true, orderId: orderIdStr });
   } catch (error) {
-    console.error('Database Error:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    console.error('API Error:', error);
+    return res.status(500).json({ success: false, message: 'Internal Server Error', error: error.message });
   }
 }
