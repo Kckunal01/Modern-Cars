@@ -1,6 +1,0 @@
-{
-  "/api/booking/route": "app/api/booking/route.js",
-  "/checkout/page": "app/checkout/page.js",
-  "/track-order/page": "app/track-order/page.js",
-  "/installation/page": "app/installation/page.js"
-}

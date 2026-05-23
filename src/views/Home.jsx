@@ -192,14 +192,14 @@ export default function Home() {
               BOOK NOW <span style={{ marginLeft: '6px' }}>→</span>
             </button>
           </div>
-          <div className="doorstep-img-box" style={{ width: '100%', maxWidth: '520px', marginRight: 'auto', marginLeft: '0' }}>
+          <div className="doorstep-img-box" style={{ width: '100%', maxWidth: '600px', marginRight: 'auto', marginLeft: '0' }}>
             <Image src="/Assets/h3.png" alt="Doorstep Upgrade" width={800} height={600} priority style={{ width: '100%', height: 'auto', borderRadius: '16px' }} />
           </div>
         </div>
       </section>
 
       <style>{`
-        h3 { font-size: 1.5rem; }
+        h3 { font-size: 2.2rem; }
         /* Hero */
         .hero-section {
           padding: 90px 0 40px;
