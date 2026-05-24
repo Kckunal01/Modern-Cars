@@ -9,29 +9,86 @@ const VALID_ORDERS = {
   'MC5120': { product: 'Seat Cover Order – Minimal', vehicle: 'Tata Nexon 2024', status: 'Order Received', date: 'May 18, 2025 • 4:20 PM', step: 1, est: '4 – 6 Days' }
 };
 
-const STEPS = [
-  'Order Received',
-  'Ready for Dispatch',
-  'Out for Delivery / Installation Scheduled',
-  'Delivered / Installed'
+const DOORSTEP_STEPS = [
+  'Order Placed',
+  'Material Processed',
+  'Executive Assigned',
+  'Out for Installation',
+  'Completed'
+];
+
+const STANDARD_STEPS = [
+  'Order Placed',
+  'Processing',
+  'Shipped',
+  'Out for Delivery',
+  'Delivered'
 ];
 
 export default function TrackOrder() {
   const [inputValue, setInputValue] = useState('');
   const [orderData, setOrderData] = useState(null);
   const [error, setError] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
-  const handleTrack = (e) => {
+  const getStepForStatus = (status, type) => {
+    if (!status) return 1;
+    const s = status.toLowerCase();
+    if (type === 'doorstep') {
+      if (s.includes('complet') || s.includes('install')) return 5;
+      if (s.includes('out') || s.includes('schedul')) return 4;
+      if (s.includes('assign')) return 3;
+      if (s.includes('process') || s.includes('production')) return 2;
+    } else {
+      if (s.includes('deliver') || s.includes('complet')) return 5;
+      if (s.includes('out') || s.includes('schedul')) return 4;
+      if (s.includes('ship') || s.includes('dispatch')) return 3;
+      if (s.includes('process') || s.includes('production')) return 2;
+    }
+    return 1;
+  };
+
+  const handleTrack = async (e) => {
     e.preventDefault();
     const id = inputValue.trim().toUpperCase();
     setError('');
     setOrderData(null);
 
-    if (!id) { setError('Please enter an Order ID.'); return; }
-    if (VALID_ORDERS[id]) {
-      setOrderData({ id, ...VALID_ORDERS[id] });
-    } else {
-      setError(`Order "${id}" not found. Please check the ID and try again.`);
+    if (!id) { setError('Please enter a Tracking ID.'); return; }
+    
+    setIsSearching(true);
+    try {
+      const res = await fetch('/api/track-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackingId: id })
+      });
+      const data = await res.json();
+      
+      if (res.ok && data.success) {
+        const o = data.order;
+        const dateStr = new Date(o.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const fType = o.fulfillmentType || 'standard';
+        
+        setOrderData({
+          id: o.trackingId,
+          product: o.product || 'Seat Cover Order',
+          vehicle: o.vehicle || 'Unknown Vehicle',
+          status: o.status || 'Order Received',
+          date: dateStr,
+          step: getStepForStatus(o.status, fType),
+          est: getStepForStatus(o.status, fType) === 5 ? 'Completed' : 'Processing...',
+          fulfillmentType: fType,
+          bookingDate: o.bookingDate,
+          bookingTime: o.bookingTime
+        });
+      } else {
+        setError('Order not found. Please check your tracking ID.');
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -53,19 +110,19 @@ export default function TrackOrder() {
 
         {/* Search Card */}
         <div className="track-card text-center">
-          <h3 style={{ marginBottom: '24px', fontSize: '1.2rem' }}>Enter Order ID</h3>
+          <h3 style={{ marginBottom: '24px', fontSize: '1.2rem' }}>Enter Tracking ID</h3>
           <form onSubmit={handleTrack}>
             <input
               type="text"
               className="input-field"
-              placeholder="Enter order ID (e.g. MC1024)"
+              placeholder="Enter tracking ID (e.g. MC-20260524-1234)"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               style={{ maxWidth: '400px', width: '100%', textAlign: 'center', margin: '0 auto 20px', display: 'block' }}
             />
             {error && <p style={{ color: 'var(--accent-red)', fontSize: '0.85rem', fontWeight: 600, marginBottom: '16px' }}>{error}</p>}
-            <button type="submit" className="btn btn-primary" style={{ padding: '12px 36px' }}>
-              Track My Order <span style={{ marginLeft: '6px' }}>→</span>
+            <button type="submit" className="btn btn-primary" style={{ padding: '12px 36px' }} disabled={isSearching}>
+              {isSearching ? 'Tracking...' : 'Track My Order'} <span style={{ marginLeft: '6px' }}>→</span>
             </button>
           </form>
         </div>
@@ -87,7 +144,7 @@ export default function TrackOrder() {
               </div>
 
               <div className="timeline-col">
-                {STEPS.map((step, i) => (
+                {(orderData.fulfillmentType === 'doorstep' ? DOORSTEP_STEPS : STANDARD_STEPS).map((step, i) => (
                   <div key={i} className={`tl-step${i < orderData.step ? ' completed' : ''}${i === orderData.step - 1 ? ' active' : ''}`}>
                     <div className="tl-dot">{i < orderData.step ? '✓' : ''}</div>
                     <div>
@@ -96,6 +153,12 @@ export default function TrackOrder() {
                     </div>
                   </div>
                 ))}
+                {orderData.fulfillmentType === 'doorstep' && orderData.bookingDate && (
+                  <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(198,40,40,0.04)', borderRadius: '8px', border: '1px solid rgba(198,40,40,0.1)' }}>
+                    <span className="result-label" style={{ marginBottom: '4px', color: 'var(--accent-red)' }}>INSTALLATION APPOINTMENT</span>
+                    <strong>{new Date(orderData.bookingDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} at {orderData.bookingTime}</strong>
+                  </div>
+                )}
               </div>
             </div>
           </div>

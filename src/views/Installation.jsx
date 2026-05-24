@@ -1,15 +1,18 @@
 "use client";
-import React, { useState } from 'react';
-import { timeSlots, getMinDate, carBrands } from '../data/carData';
+import React, { useCallback, useEffect, useState } from 'react';
+import { getMinDate, carBrands } from '../data/carData';
 
 export default function Installation({ incrementFormSubmissions }) {
   const [formData, setFormData] = useState({
-    name: '', phone: '', pincode: '', brand: '', model: '', year: '', area: '', date: '', time: '', message: '', whatsappContact: true,
+    name: '', phone: '', email: '', city: '', pincode: '', brand: '', model: '', year: '', area: '', date: '', time: '', message: '', whatsappContact: true,
     services: { seatCover: false, premiumMatting: false, steeringCover: false, ambientLight: false, specialMod: false }
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   const brands = Object.keys(carBrands);
   const models = formData.brand ? Object.keys(carBrands[formData.brand].models) : [];
@@ -18,53 +21,172 @@ export default function Installation({ incrementFormSubmissions }) {
     : [];
 
   const getTomorrowDate = () => getMinDate(1);
+  const fetchAvailableSlots = useCallback(async (selectedDate) => {
+  if (!selectedDate) {
+    setAvailableSlots([]);
+    return;
+  }
+
+  try {
+    setIsLoadingSlots(true);
+
+    const res = await fetch(
+      `/api/available-slots?date=${selectedDate}`
+    );
+
+    const data = await res.json();
+
+    const slots = data.availableSlots || [];
+
+    setAvailableSlots(slots);
+
+    setFormData(prev => {
+      if (prev.time && !slots.includes(prev.time)) {
+        return {
+          ...prev,
+          time: ''
+        };
+      }
+
+      return prev;
+    });
+  } catch (err) {
+    console.error('Slot fetch failed:', err);
+    setAvailableSlots([]);
+  } finally {
+    setIsLoadingSlots(false);
+  }
+}, []);
+
+  const validateForm = () => {
+    const e = {};
+    if (!formData.name.trim()) e.name = 'Required';
+    if (!formData.phone.match(/^[0-9]{10}$/)) e.phone = 'Valid 10-digit number required';
+    if (!formData.email.trim() || !formData.email.includes('@')) e.email = 'Valid email required';
+    if (!formData.city.trim()) e.city = 'Required';
+    if (!formData.brand) e.brand = 'Required';
+    if (!formData.model) e.model = 'Required';
+    if (!formData.year) e.year = 'Required';
+    if (!formData.date) e.date = 'Required';
+    if (!formData.time) e.time = 'Required';
+    return e;
+  };
+
+  const isFormValid = Object.keys(validateForm()).length === 0;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => {
       const next = { ...prev, [name]: type === 'checkbox' ? checked : value };
-      if (name === 'brand') { next.model = ''; next.year = ''; }
-      if (name === 'model') { next.year = ''; }
+      if (name === 'brand') {
+  next.model = '';
+  next.year = '';
+}
+
+if (name === 'model') {
+  next.year = '';
+}
+
+// reset slot when date changes
+if (name === 'date') {
+  next.time = '';
+}
       return next;
     });
     if (error) setError(null);
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: null }));
   };
 
   const handleServiceChange = (service) => {
-    setFormData(prev => ({ ...prev, services: { ...prev.services, [service]: !prev.services[service] } }));
-  };
+  setFormData(prev => ({
+    ...prev,
+    services: {
+      ...prev.services,
+      [service]: !prev.services[service]
+    }
+  }));
+};
+
+useEffect(() => {
+  if (formData.date) {
+    fetchAvailableSlots(formData.date);
+  } else {
+    setAvailableSlots([]);
+  }
+}, [formData.date, fetchAvailableSlots]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (incrementFormSubmissions) {
-      const { allowed, secondsLeft } = incrementFormSubmissions();
-      if (!allowed) { alert(`Too many requests. Wait ${secondsLeft}s.`); return; }
-    }
-    setIsSubmitting(true);
-    setError(null);
+  e.preventDefault();
 
-    try {
-      const res = await fetch('/api/booking', {
-        method: 'POST',
-        body: JSON.stringify(formData),
-        headers: { 'Content-Type': 'application/json' }
-      });
-      const data = await res.json();
-      
-      if (res.ok && data.success) {
-        setIsSubmitting(false);
-        setIsSuccess(true);
-      } else {
-        setIsSubmitting(false);
-        console.error("Supabase Booking Insert Failed:", data);
-        setError(data.message || 'Failed to submit booking. Please try again.');
-      }
-    } catch (err) {
-      console.error("Booking API error:", err);
-      setIsSubmitting(false);
-      setError('Network error. Please try again later.');
+  if (incrementFormSubmissions) {
+    const { allowed, secondsLeft } =
+      incrementFormSubmissions();
+
+    if (!allowed) {
+      alert(
+        `Too many requests. Wait ${secondsLeft}s.`
+      );
+      return;
     }
-  };
+  }
+
+  const errs = validateForm();
+
+  if (Object.keys(errs).length > 0) {
+    setErrors(errs);
+    return;
+  }
+
+  setErrors({});
+  setError(null);
+  setIsSubmitting(true);
+
+  try {
+    const res = await fetch('/api/booking', {
+      method: 'POST',
+      body: JSON.stringify(formData),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const data = await res.json();
+
+    if (res.ok && data.success) {
+      // Refresh slot availability
+      await fetchAvailableSlots(formData.date);
+
+      // Clear selected slot
+      setFormData(prev => ({
+        ...prev,
+        time: ''
+      }));
+
+      setIsSuccess(true);
+    } else {
+      console.error(
+        'Supabase Booking Insert Failed:',
+        data
+      );
+
+      setError(
+        data.message ||
+          'Failed to submit booking. Please try again.'
+      );
+    }
+  } catch (err) {
+    console.error(
+      'Booking API error:',
+      err
+    );
+
+    setError(
+      'Network error. Please try again later.'
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (isSuccess) {
     return (
@@ -73,7 +195,18 @@ export default function Installation({ incrementFormSubmissions }) {
           <div style={{ fontSize: '56px', marginBottom: '20px' }}>✓</div>
           <h1 style={{ marginBottom: '12px', fontSize: '2rem' }}>Booking Received</h1>
           <p style={{ color: '#777', marginBottom: '28px' }}>Our team will contact you shortly to confirm your appointment.</p>
-          <button className="btn btn-primary" onClick={() => setIsSuccess(false)}>BOOK ANOTHER</button>
+          <button
+  className="btn btn-primary"
+  onClick={async () => {
+    setIsSuccess(false);
+
+    if (formData.date) {
+      await fetchAvailableSlots(formData.date);
+    }
+  }}
+>
+  BOOK ANOTHER
+</button>
         </div>
       </div>
     );
@@ -138,39 +271,96 @@ export default function Installation({ incrementFormSubmissions }) {
             <div className="form-section">
               <label className="section-label">Personal Details</label>
               <div className="form-row-3">
-                <input type="text" name="name" className="input-field" placeholder="Full Name" required onChange={handleChange} />
-                <input type="tel" name="phone" className="input-field" placeholder="Phone Number" required onChange={handleChange} />
-                <input type="text" name="pincode" className="input-field" placeholder="Pincode" required onChange={handleChange} />
+                <div>
+                  <input type="text" name="name" className={`input-field${errors.name ? ' error' : ''}`} placeholder="Full Name *" value={formData.name} required onChange={handleChange} />
+                  {errors.name && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.name}</span>}
+                </div>
+                <div>
+                  <input type="tel" name="phone" className={`input-field${errors.phone ? ' error' : ''}`} placeholder="Phone Number *" value={formData.phone} required onChange={handleChange} />
+                  {errors.phone && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.phone}</span>}
+                </div>
+                <div>
+                  <input type="email" name="email" className={`input-field${errors.email ? ' error' : ''}`} placeholder="Email Address *" value={formData.email} required onChange={handleChange} />
+                  {errors.email && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.email}</span>}
+                </div>
+              </div>
+              <div className="form-row-3" style={{ marginTop: '16px' }}>
+                <div>
+                  <input type="text" name="city" className={`input-field${errors.city ? ' error' : ''}`} placeholder="City *" value={formData.city} required onChange={handleChange} />
+                  {errors.city && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.city}</span>}
+                </div>
+                <div>
+                  <input type="text" name="pincode" className="input-field" placeholder="Pincode" value={formData.pincode} onChange={handleChange} />
+                </div>
               </div>
             </div>
 
             <div className="form-section">
               <label className="section-label">Vehicle Details</label>
               <div className="form-row-3">
-                <select name="brand" className="input-field" required value={formData.brand} onChange={handleChange}>
-                  <option value="">Select Brand</option>
-                  {brands.map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-                <select name="model" className="input-field" required value={formData.model} onChange={handleChange} disabled={!formData.brand}>
-                  <option value="">Select Model</option>
-                  {models.map(m => <option key={m} value={m}>{m}</option>)}
-                </select>
-                <select name="year" className="input-field" required value={formData.year} onChange={handleChange} disabled={!formData.model}>
-                  <option value="">Select Year</option>
-                  {years.map(y => <option key={y} value={y}>{y}</option>)}
-                </select>
+                <div>
+                  <select name="brand" className={`input-field${errors.brand ? ' error' : ''}`} required value={formData.brand} onChange={handleChange}>
+                    <option value="">Select Brand *</option>
+                    {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                  {errors.brand && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.brand}</span>}
+                </div>
+                <div>
+                  <select name="model" className={`input-field${errors.model ? ' error' : ''}`} required value={formData.model} onChange={handleChange} disabled={!formData.brand}>
+                    <option value="">Select Model *</option>
+                    {models.map(m => <option key={m} value={m}>{m}</option>)}
+                  </select>
+                  {errors.model && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.model}</span>}
+                </div>
+                <div>
+                  <select name="year" className={`input-field${errors.year ? ' error' : ''}`} required value={formData.year} onChange={handleChange} disabled={!formData.model}>
+                    <option value="">Select Year *</option>
+                    {years.map(y => <option key={y} value={y}>{y}</option>)}
+                  </select>
+                  {errors.year && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.year}</span>}
+                </div>
               </div>
             </div>
 
             <div className="form-section">
               <label className="section-label">Appointment Details</label>
               <div className="form-row-3">
-                <input type="text" name="area" className="input-field" placeholder="Area / Address" required onChange={handleChange} />
-                <input type="date" name="date" className="input-field" required min={getTomorrowDate()} onChange={handleChange} />
-                <select name="time" className="input-field" required onChange={handleChange} value={formData.time}>
-                  <option value="">Available Time (11am-7pm)</option>
-                  {timeSlots.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
+                <input type="text" name="area" className="input-field" placeholder="Area / Address" value={formData.area} onChange={handleChange} />
+                <div>
+                  <input type="date" name="date" className={`input-field${errors.date ? ' error' : ''}`} required min={getTomorrowDate()} value={formData.date} onChange={handleChange} />
+                  {errors.date && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.date}</span>}
+                </div>
+                <div>
+                  <select
+  name="time"
+  className={`input-field${
+    errors.time ? ' error' : ''
+  }`}
+  required
+  onChange={handleChange}
+  value={formData.time}
+  disabled={
+    isLoadingSlots ||
+    !formData.date ||
+    availableSlots.length === 0
+  }
+>
+  <option value="">
+    {isLoadingSlots
+      ? 'Checking availability...'
+      : availableSlots.length === 0
+      ? 'No slots available'
+      : 'Available Time *'}
+  </option>
+
+  {availableSlots.map((t) => (
+    <option key={t} value={t}>
+      {t}
+    </option>
+  ))}
+</select>
+                  {errors.time && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.time}</span>}
+                </div>
               </div>
             </div>
 
@@ -198,7 +388,7 @@ export default function Installation({ incrementFormSubmissions }) {
 
             <div className="form-section">
               <label className="section-label">Additional Message (Optional)</label>
-              <textarea name="message" className="input-field" rows="3" placeholder="Tell us more about your requirement..." onChange={handleChange} style={{ width: '100%', resize: 'vertical' }}></textarea>
+              <textarea name="message" className="input-field" rows="3" placeholder="Tell us more about your requirement..." value={formData.message} onChange={handleChange} style={{ width: '100%', resize: 'vertical' }}></textarea>
             </div>
 
             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '28px', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>
@@ -207,7 +397,7 @@ export default function Installation({ incrementFormSubmissions }) {
             </label>
 
             <div className="text-center" style={{ display: 'flex', justifyContent: 'center' }}>
-              <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ padding: '16px 56px', fontSize: '1rem' }}>
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting || !isFormValid} style={{ padding: '16px 56px', fontSize: '1rem', opacity: (!isFormValid || isSubmitting) ? 0.6 : 1 }}>
                 {isSubmitting ? 'PROCESSING...' : 'Book My Experience'}
               </button>
             </div>

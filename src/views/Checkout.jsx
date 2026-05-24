@@ -25,7 +25,7 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
   }, [ctx?.selectedIdentity]);
 
   const [formData, setFormData] = useState({
-    name: '', phone: '', address: '', pincode: '', city: '', state: ''
+    name: '', phone: '', email: '', address: '', pincode: '', city: '', state: ''
   });
   const [addDoorstep, setAddDoorstep] = useState(false);
   const [doorstepDate, setDoorstepDate] = useState('');
@@ -33,7 +33,7 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
   const [paymentMethod, setPaymentMethod] = useState('online');
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [orderComplete, setOrderComplete] = useState(false);
+  const [completedTrackingId, setCompletedTrackingId] = useState(null);
 
   const isLucknow = formData.city.toLowerCase().trim() === 'lucknow';
 
@@ -41,12 +41,19 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
     const e = {};
     if (!formData.name.trim()) e.name = 'Required';
     if (!formData.phone.match(/^[0-9]{10}$/)) e.phone = 'Valid 10-digit number required';
+    if (!formData.email.trim() || !formData.email.includes('@')) e.email = 'Valid email required';
     if (!formData.address.trim()) e.address = 'Required';
     if (!formData.pincode.match(/^[0-9]{6}$/)) e.pincode = 'Valid 6-digit pincode required';
     if (!formData.city.trim()) e.city = 'Required';
     if (!formData.state.trim()) e.state = 'Required';
+    if (addDoorstep) {
+      if (!doorstepDate) e.doorstepDate = 'Required';
+      if (!doorstepTime) e.doorstepTime = 'Required';
+    }
     return e;
   };
+
+  const isFormValid = Object.keys(validateForm()).length === 0;
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -55,10 +62,6 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
       if (!allowed) { alert(`Too many requests. Wait ${secondsLeft}s.`); return; }
     }
     const errs = validateForm();
-    if (addDoorstep) {
-      if (!doorstepDate) errs.doorstepDate = 'Required';
-      if (!doorstepTime) errs.doorstepTime = 'Required';
-    }
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     setIsSubmitting(true);
@@ -89,7 +92,7 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
       
       if (res.ok && data.success) {
         setIsSubmitting(false);
-        setOrderComplete(true);
+        setCompletedTrackingId(data.trackingId);
       } else {
         setIsSubmitting(false);
         console.error("Supabase Order Insert Failed:", data);
@@ -118,13 +121,14 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
   const shipping = 0;
   const total = baseFare - discount + taxes + doorstepCost + shipping + codFee;
 
-  if (orderComplete) {
+  if (completedTrackingId) {
     return (
       <div className="checkout-page text-center" style={{ padding: '140px 20px', minHeight: '80vh', backgroundColor: '#fafafa' }}>
         <div style={{ maxWidth: '500px', margin: '0 auto', background: '#fff', padding: '64px 40px', borderRadius: '16px', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
           <div style={{ fontSize: '56px', marginBottom: '20px' }}>✓</div>
           <h1 style={{ marginBottom: '12px', fontSize: '2rem' }}>Order Confirmed</h1>
-          <p style={{ color: '#777', marginBottom: '28px' }}>Order ID: <strong>#MC{Math.floor(Math.random() * 9000) + 1000}</strong></p>
+          <p style={{ color: '#777', marginBottom: '8px' }}>Tracking ID: <strong style={{ color: 'var(--accent-red)', fontSize: '1.1rem' }}>{completedTrackingId}</strong></p>
+          <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '28px' }}>Save this ID to track your order.</p>
           <button className="btn btn-primary" onClick={() => { setCurrentPage('track-order'); window.location.hash = 'track-order'; }}>TRACK YOUR ORDER</button>
         </div>
       </div>
@@ -168,7 +172,12 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
                     {errors.phone && <span className="error-text">{errors.phone}</span>}
                   </div>
                 </div>
-                <p style={{ fontSize: '0.72rem', color: '#999', marginTop: '4px' }}>Order updates will be sent via WhatsApp.</p>
+                <div className="form-group" style={{ marginTop: '16px' }}>
+                  <label className="field-label">Email Address <span className="text-red">*</span></label>
+                  <input type="email" name="email" className={`input-field${errors.email ? ' error' : ''}`} placeholder="Enter your email" value={formData.email} onChange={handleChange} />
+                  {errors.email && <span className="error-text">{errors.email}</span>}
+                </div>
+                <p style={{ fontSize: '0.72rem', color: '#999', marginTop: '4px' }}>Order updates will be sent via WhatsApp and Email.</p>
               </div>
 
               {/* Delivery Address */}
@@ -291,7 +300,7 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
                 <strong style={{ fontSize: '1.15rem' }}>₹ {paymentMethod === 'cod' ? '500' : total.toLocaleString()}</strong>
               </div>
 
-              <button className="btn" style={{ width: '100%', padding: '16px', marginTop: '24px', backgroundColor: paymentMethod === 'online' ? '#3395FF' : '#FFC439', color: paymentMethod === 'online' ? '#fff' : '#003087', fontWeight: 700, borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handlePlaceOrder} disabled={isSubmitting}>
+              <button className="btn" style={{ width: '100%', padding: '16px', marginTop: '24px', backgroundColor: paymentMethod === 'online' ? '#3395FF' : '#FFC439', color: paymentMethod === 'online' ? '#fff' : '#003087', fontWeight: 700, borderRadius: '8px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (!isFormValid || isSubmitting) ? 0.6 : 1 }} onClick={handlePlaceOrder} disabled={isSubmitting || !isFormValid}>
                 {isSubmitting ? 'PROCESSING...' : (paymentMethod === 'online' ? 'Pay with Razorpay' : 'Confirm Order (COD)')}
               </button>
               <p style={{ textAlign: 'center', fontSize: '0.72rem', color: '#999', marginTop: '12px' }}>🔒 Secure 256-bit SSL encryption</p>
