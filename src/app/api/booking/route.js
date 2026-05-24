@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '../../../../lib/supabase.js';
-import { sendBookingConfirmationEmail } from '../../../lib/email.js';
+
+import {
+  sendBookingConfirmationEmail,
+  sendAdminBookingAlert,
+} from '../../../lib/email.js';
 
 export async function POST(req) {
   try {
@@ -21,11 +25,15 @@ export async function POST(req) {
       message,
     } = body;
 
-    console.log('Received booking payload:', body);
+    console.log(
+      'Received booking payload:',
+      body
+    );
 
-    // -----------------------------
-    // Validation
-    // -----------------------------
+    /* =========================
+       VALIDATION
+    ========================= */
+
     if (
       !name ||
       !phone ||
@@ -39,65 +47,97 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Please complete all required fields.',
+          message:
+            'Please complete all required fields.',
         },
         { status: 400 }
       );
     }
 
-    // -----------------------------
-    // Prevent same user booking
-    // same day
-    // -----------------------------
-    const { data: existingUserBooking } = await supabase
+    /* =========================
+       PREVENT SAME USER SAME DAY
+    ========================= */
+
+    const {
+      data: existingUserBooking,
+    } = await supabase
       .from('customers')
       .select('id, phone')
       .eq('phone', phone);
 
     if (existingUserBooking?.length) {
-      const customerIds = existingUserBooking.map((c) => c.id);
+      const customerIds =
+        existingUserBooking.map(
+          (c) => c.id
+        );
 
-      const { data: userBookings } = await supabase
+      const {
+        data: userBookings,
+      } = await supabase
         .from('bookings')
         .select('booking_date')
-        .in('customer_id', customerIds)
-        .eq('booking_date', date)
-        .neq('status', 'cancelled');
+        .in(
+          'customer_id',
+          customerIds
+        )
+        .eq(
+          'booking_date',
+          date
+        )
+        .neq(
+          'status',
+          'cancelled'
+        );
 
       if (userBookings?.length) {
         return NextResponse.json(
           {
             success: false,
-            message: 'You already booked a slot for this day.',
+            message:
+              'You already booked a slot for this day.',
           },
           { status: 400 }
         );
       }
     }
 
-    // -----------------------------
-    // Prevent duplicate slot booking
-    // -----------------------------
-    const { data: existingSlot } = await supabase
+    /* =========================
+       PREVENT SLOT DUPLICATION
+    ========================= */
+
+    const {
+      data: existingSlot,
+    } = await supabase
       .from('bookings')
       .select('id')
-      .eq('booking_date', date)
-      .eq('booking_time', time)
-      .neq('status', 'cancelled');
+      .eq(
+        'booking_date',
+        date
+      )
+      .eq(
+        'booking_time',
+        time
+      )
+      .neq(
+        'status',
+        'cancelled'
+      );
 
     if (existingSlot?.length) {
       return NextResponse.json(
         {
           success: false,
-          message: 'This slot is already booked.',
+          message:
+            'This slot is already booked.',
         },
         { status: 400 }
       );
     }
 
-    // -----------------------------
-    // Insert customer
-    // -----------------------------
+    /* =========================
+       CREATE CUSTOMER
+    ========================= */
+
     const fullAddressArea =
       `${area || ''} - ${pincode || ''}`.trim();
 
@@ -135,55 +175,86 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Failed to save customer details.',
-          error: customerError.message,
+          message:
+            'Failed to save customer details.',
+          error:
+            customerError.message,
         },
         { status: 500 }
       );
     }
 
-    const customerId = customerData.id;
+    const customerId =
+      customerData.id;
 
-    // -----------------------------
-    // Build service list
-    // -----------------------------
-    const selectedServices = [];
+    /* =========================
+       BUILD SERVICE STRING
+    ========================= */
+
+    const selectedServices =
+      [];
 
     if (services) {
       if (services.seatCover)
-        selectedServices.push('Seat Cover');
+        selectedServices.push(
+          'Seat Cover'
+        );
 
-      if (services.premiumMatting)
-        selectedServices.push('Premium Matting');
+      if (
+        services.premiumMatting
+      )
+        selectedServices.push(
+          'Premium Matting'
+        );
 
-      if (services.steeringCover)
-        selectedServices.push('Steering Cover');
+      if (
+        services.steeringCover
+      )
+        selectedServices.push(
+          'Steering Cover'
+        );
 
-      if (services.ambientLight)
-        selectedServices.push('Ambient Light');
+      if (
+        services.ambientLight
+      )
+        selectedServices.push(
+          'Ambient Light'
+        );
 
       if (services.specialMod)
-        selectedServices.push('Special Modification');
+        selectedServices.push(
+          'Special Modification'
+        );
     }
 
-    let serviceStr = selectedServices.join(', ');
+    let serviceStr =
+      selectedServices.join(
+        ', '
+      );
 
     if (!serviceStr) {
-      serviceStr = 'Doorstep Installation';
+      serviceStr =
+        'Doorstep Installation';
     }
 
     if (message) {
-      serviceStr += ` | Note: ${message}`;
+      serviceStr +=
+        ` | Note: ${message}`;
     }
 
-    // -----------------------------
-    // Insert booking
-    // -----------------------------
+    /* =========================
+       CREATE BOOKING
+    ========================= */
+
     const bookingPayload = {
-      customer_id: customerId,
-      service_name: serviceStr,
-      booking_date: date,
-      booking_time: time,
+      customer_id:
+        customerId,
+      service_name:
+        serviceStr,
+      booking_date:
+        date,
+      booking_time:
+        time,
       status: 'pending',
     };
 
@@ -210,8 +281,10 @@ export async function POST(req) {
       return NextResponse.json(
         {
           success: false,
-          message: 'Failed to save booking details.',
-          error: bookingError.message,
+          message:
+            'Failed to save booking details.',
+          error:
+            bookingError.message,
         },
         { status: 500 }
       );
@@ -222,34 +295,84 @@ export async function POST(req) {
       bookingData.id
     );
 
-    // -----------------------------
-    // Send confirmation email
-    // -----------------------------
-    await sendBookingConfirmationEmail({
-      email,
-      name,
-      brand,
-      model,
-      year,
-      doorstepDate: date,
-      doorstepTime: time,
-    });
+    /* =========================
+       CUSTOMER EMAIL
+    ========================= */
+
+    try {
+      await sendBookingConfirmationEmail({
+        email,
+        name,
+        brand,
+        model,
+        year,
+        doorstepDate:
+          date,
+        doorstepTime:
+          time,
+      });
+    } catch (e) {
+      console.error(
+        'Booking confirmation email failed:',
+        e
+      );
+    }
+
+    /* =========================
+       ADMIN BOOKING ALERT
+    ========================= */
+
+    try {
+      await sendAdminBookingAlert({
+        bookingId:
+          bookingData.id,
+        name,
+        phone,
+        email,
+        vehicle:
+          carModelStr,
+        bookingDate:
+          date,
+        bookingTime:
+          time,
+        services:
+          serviceStr,
+        notes:
+          message ||
+          'No notes',
+      });
+    } catch (e) {
+      console.error(
+        'Admin booking alert failed:',
+        e
+      );
+    }
+
+    /* =========================
+       SUCCESS RESPONSE
+    ========================= */
 
     return NextResponse.json(
       {
         success: true,
-        bookingId: bookingData.id,
+        bookingId:
+          bookingData.id,
       },
       { status: 200 }
     );
   } catch (error) {
-    console.error('API Error:', error);
+    console.error(
+      'API Error:',
+      error
+    );
 
     return NextResponse.json(
       {
         success: false,
-        message: 'Internal Server Error',
-        error: error.message,
+        message:
+          'Internal Server Error',
+        error:
+          error.message,
       },
       { status: 500 }
     );

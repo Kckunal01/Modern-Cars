@@ -129,7 +129,8 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
           <h1 style={{ marginBottom: '12px', fontSize: '2rem' }}>Order Confirmed</h1>
           <p style={{ color: '#777', marginBottom: '8px' }}>Tracking ID: <strong style={{ color: 'var(--accent-red)', fontSize: '1.1rem' }}>{completedTrackingId}</strong></p>
           <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '28px' }}>Save this ID to track your order.</p>
-          <button className="btn btn-primary" onClick={() => { setCurrentPage('track-order'); window.location.hash = 'track-order'; }}>TRACK YOUR ORDER</button>
+          <button className="btn btn-primary" style={{ width: '100%', marginBottom: '12px' }} onClick={() => { window.location.href = '/'; }}>BROWSE MORE</button>
+          <button className="btn" style={{ width: '100%', background: 'transparent', border: '1px solid #ddd', color: '#555', padding: '14px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }} onClick={() => { window.location.href = '/track-order'; }}>Track Your Order</button>
         </div>
       </div>
     );

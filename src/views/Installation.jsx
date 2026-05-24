@@ -197,15 +197,20 @@ useEffect(() => {
           <p style={{ color: '#777', marginBottom: '28px' }}>Our team will contact you shortly to confirm your appointment.</p>
           <button
   className="btn btn-primary"
+  onClick={() => { window.location.href = '/'; }}
+  style={{ marginBottom: '12px', width: '100%' }}
+>
+  BROWSE MORE
+</button>
+          <button
+  className="btn"
+  style={{ width: '100%', background: 'transparent', border: '1px solid #ddd', color: '#555', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem' }}
   onClick={async () => {
     setIsSuccess(false);
-
-    if (formData.date) {
-      await fetchAvailableSlots(formData.date);
-    }
+    if (formData.date) await fetchAvailableSlots(formData.date);
   }}
 >
-  BOOK ANOTHER
+  Book Another
 </button>
         </div>
       </div>
@@ -397,7 +402,7 @@ useEffect(() => {
             </label>
 
             <div className="text-center" style={{ display: 'flex', justifyContent: 'center' }}>
-              <button type="submit" className="btn btn-primary" disabled={isSubmitting || !isFormValid} style={{ padding: '16px 56px', fontSize: '1rem', opacity: (!isFormValid || isSubmitting) ? 0.6 : 1 }}>
+              <button type="submit" className="btn btn-primary" disabled={isSubmitting} style={{ padding: '16px 56px', fontSize: '1rem', opacity: isSubmitting ? 0.6 : 1 }}>
                 {isSubmitting ? 'PROCESSING...' : 'Book My Experience'}
               </button>
             </div>
