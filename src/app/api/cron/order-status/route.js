@@ -3,11 +3,12 @@ import { supabase } from '../../../../../lib/supabase.js';
 
 // Hardcoded status progression based on elapsed days since order creation
 const STATUS_TIMELINE = [
-  { maxDays: 1,  status: 'Order Placed' },
-  { maxDays: 3,  status: 'Processing' },
-  { maxDays: 5,  status: 'Shipped' },
-  { maxDays: 7,  status: 'Out for Delivery' },
-  { maxDays: Infinity, status: 'Delivered' },
+  { maxDays: 1, status: 'Order Placed' },
+  { maxDays: 2, status: 'Processing' },
+  { maxDays: 4, status: 'Shipped' },
+
+  // final automated state
+  { maxDays: Infinity, status: 'Out for Delivery' },
 ];
 
 // Status rank — never downgrade
@@ -27,7 +28,7 @@ function computeTargetStatus(createdAt) {
   for (const tier of STATUS_TIMELINE) {
     if (elapsedDays < tier.maxDays) return tier.status;
   }
-  return 'Delivered';
+  return 'Out for Delivery';
 }
 
 export async function GET(req) {

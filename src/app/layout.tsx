@@ -1,3 +1,4 @@
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Inter, Playfair_Display, Outfit } from "next/font/google";
 import "../index.css";
@@ -28,6 +29,7 @@ export default function RootLayout({
         <ClientWrapper>
           {children}
         </ClientWrapper>
+        <SpeedInsights />
       </body>
     </html>
   );
