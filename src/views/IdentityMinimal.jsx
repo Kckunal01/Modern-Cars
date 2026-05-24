@@ -10,7 +10,7 @@ export default function IdentityMinimal() {
   const { setSelectedIdentity } = useAppContext();
   const slides = ['/Assets/M1.png', '/Assets/M2.png', '/Assets/M3.png', '/Assets/M4.png'];
   const trackRef = useRef(null);
-  const [slideIndex, setSlideIndex] = useState(0);
+
 
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
@@ -23,12 +23,14 @@ export default function IdentityMinimal() {
   const price = (brand && model) ? getPrice('minimal', brand, model) : 8999;
 
 
+
+
   const scrollLeft = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth / 3, behavior: 'smooth' });
+    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth, behavior: 'smooth' });
   };
-  
+
   const scrollRight = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth / 3, behavior: 'smooth' });
+    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth, behavior: 'smooth' });
   };
 
   const handleCheckout = () => {
@@ -58,7 +60,7 @@ export default function IdentityMinimal() {
 
       {/* Header */}
       <section className="id-header-section">
-        <h1 className="id-title">M I N I M A L</h1>
+        <h1 className="id-title">MINIMAL</h1>
         <p className="id-subtitle">Clean. Calm. Timeless.<br/>Designed for people who believe luxury should feel effortless.</p>
       </section>
 

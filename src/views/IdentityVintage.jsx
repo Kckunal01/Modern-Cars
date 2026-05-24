@@ -23,13 +23,9 @@ export default function IdentityVintage() {
   const price = (brand && model) ? getPrice('vintage', brand, model) : 9999;
 
 
-  const scrollLeft = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth / 3, behavior: 'smooth' });
-  };
+  const scrollLeft = () => { if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth, behavior: 'smooth' }); };
   
-  const scrollRight = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth / 3, behavior: 'smooth' });
-  };
+  const scrollRight = () => { if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth, behavior: 'smooth' }); };
 
   const handleCheckout = () => {
     if (!brand || !model || !year) {
@@ -58,7 +54,7 @@ export default function IdentityVintage() {
 
       {/* Header */}
       <section className="id-header-section">
-        <h1 className="id-title">V I N T A G E</h1>
+        <h1 className="id-title">VINTAGE</h1>
         <p className="id-subtitle" style={{ color: '#F0D5A8' }}>Timeless character. Modern comfort.<br/>Inspired by classic luxury. Crafted for today's drives.</p>
       </section>
 

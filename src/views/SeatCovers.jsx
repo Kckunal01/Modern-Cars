@@ -315,7 +315,7 @@ export default function SeatCovers() {
           display: flex;
           white-space: nowrap;
           align-items: center;
-          animation: marquee-scroll 18s linear infinite;
+          animation: marquee-scroll 5s linear infinite;
         }
         .marquee-item {
           font-weight: 800;
@@ -371,10 +371,23 @@ export default function SeatCovers() {
         @media (max-width: 900px) {
           .sc-hero-grid { grid-template-columns: 1fr; text-align: center; }
           .sc-features { justify-content: center; }
-          .identity-grid { grid-template-columns: repeat(2, 1fr); }
+          .identity-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+          .identity-section { padding: 40px 0 !important; }
+          .identity-heading { font-size: 1.7rem; }
           .find-fit-card > div { grid-template-columns: 1fr !important; }
-          .better-grid { grid-template-columns: 1fr; }
+          .better-grid { grid-template-columns: 1fr; gap: 32px; }
           .better-stats { grid-template-columns: 1fr 1fr; }
+          .better-section { padding-bottom: 60px !important; }
+          .identity-card-overlay h3 { font-size: 1.1rem; }
+          .identity-card-overlay p { font-size: 0.72rem; }
+          .identity-card-overlay { padding: 20px 14px; }
+        }
+        @media (max-width: 480px) {
+          .identity-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .identity-card { aspect-ratio: 2/3; }
+          .identity-heading { font-size: 1.4rem; }
+          .find-fit-card { padding: 20px 16px !important; }
+          .better-section > div { font-size: 1.5rem !important; }
         }
       `}</style>
     </div>

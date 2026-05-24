@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useAppContext } from '../context/AppContext';
@@ -9,15 +9,16 @@ import { carBrands, getPrice } from '../data/carData';
 export default function IdentityStealth() {
   const router = useRouter();
   const { setSelectedIdentity } = useAppContext();
+  const trackRef = useRef(null);
   const slides = ['/Assets/S1.png', '/Assets/S2.png', '/Assets/S3.png', '/Assets/S4.png'];
-  const trackRef = React.useRef(null);
-  
+  const [slideIndex, setSlideIndex] = useState(0);
+
   const scrollLeft = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth / 3, behavior: 'smooth' });
+    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth, behavior: 'smooth' });
   };
   
   const scrollRight = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth / 3, behavior: 'smooth' });
+    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth, behavior: 'smooth' });
   };
 
   const [brand, setBrand] = useState('');
@@ -95,7 +96,7 @@ export default function IdentityStealth() {
 
       {/* Header */}
       <section className="id-header-section">
-        <h1 className="id-title">S T E A L T H</h1>
+        <h1 className="id-title">STEALTH</h1>
         <p className="id-subtitle">Sharp. Understated. Powerful.<br/>Built for darker cabins, quieter personalities and modern interiors.</p>
       </section>
 

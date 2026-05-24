@@ -11,6 +11,7 @@ export default function IdentitySignature() {
   const slides = ['/Assets/Si1.png', '/Assets/Si2.png', '/Assets/Si3.png', '/Assets/Si4.png'];
   const trackRef = useRef(null);
   const [slideIndex, setSlideIndex] = useState(0);
+  const slideWidth = () => trackRef.current ? trackRef.current.offsetWidth : 0;
 
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
@@ -22,13 +23,14 @@ export default function IdentitySignature() {
 
   const price = (brand && model) ? getPrice('signature', brand, model) : 9499;
 
-
-  const scrollLeft = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: -trackRef.current.clientWidth / 3, behavior: 'smooth' });
+  const handlePrev = () => {
+    const newIdx = slideIndex === 0 ? slides.length - 1 : slideIndex - 1;
+    setSlideIndex(newIdx);
   };
-  
-  const scrollRight = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: trackRef.current.clientWidth / 3, behavior: 'smooth' });
+
+  const handleNext = () => {
+    const newIdx = (slideIndex + 1) % slides.length;
+    setSlideIndex(newIdx);
   };
 
   const handleCheckout = () => {
@@ -47,18 +49,18 @@ export default function IdentitySignature() {
     <div className="identity-page-wrapper theme-signature" style={{ paddingTop: '72px' }}>
       
       <section className="id-hero-carousel-3up">
-        <button className="carousel-nav-btn prev" onClick={scrollLeft}>‹</button>
-        <div className="carousel-track" ref={trackRef}>
+        <button className="carousel-nav-btn prev" onClick={handlePrev}>‹</button>
+        <div className="carousel-track" ref={trackRef} style={{ transform: `translateX(-${slideIndex * slideWidth()}px)` }}>
           {slides.map((src, index) => (
             <img key={index} src={src} alt={`Signature ${index + 1}`} className="carousel-slide" />
           ))}
         </div>
-        <button className="carousel-nav-btn next" onClick={scrollRight}>›</button>
+        <button className="carousel-nav-btn next" onClick={handleNext}>›</button>
       </section>
 
       {/* Header */}
       <section className="id-header-section">
-        <h1 className="id-title">S I G N A T U R E</h1>
+        <h1 className="id-title">SIGNATURE</h1>
         <p className="id-subtitle">Designed To Be Remembered.<br/>For drivers who want emotion in their cabin.</p>
       </section>
 

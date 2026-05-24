@@ -172,10 +172,13 @@
 .id-title {
   font-family: var(--font-heading, 'Playfair Display', serif);
   font-size: 4.5rem;
-  letter-spacing: 0.25em;
+  letter-spacing: 0.6em;
+  text-indent: 0.6em;
+  text-align: center;
   margin: 0 0 16px;
   font-weight: 400;
   color: var(--text-primary);
+  text-transform: uppercase;
 }
 
 .theme-signature .id-title {
@@ -325,7 +328,7 @@
 .id-material-card {
   border-radius: 8px;
   overflow: hidden;
-  height: 280px;
+  height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,8 +337,8 @@
 
 .id-material-card img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
   display: block;
 }
 
@@ -518,12 +521,192 @@
 }
 
 @media (max-width: 900px) {
-  .id-cabin-section { grid-template-columns: 1fr; }
-  .id-materials-grid { grid-template-columns: 1fr 1fr; }
-  .id-config-box { grid-template-columns: 1fr; }
-  .id-config-right { border-left: none; border-top: 1px solid var(--border); }
-  .id-trust-row { flex-wrap: wrap; }
-  .id-title { font-size: 3rem; }
+  /* Hero carousel: 1 slide at a time on mobile */
+  .carousel-slide {
+    flex: 0 0 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .id-hero-carousel-3up {
+    height: 52vw;
+    min-height: 240px;
+    max-height: 380px;
+  }
+
+  /* Title: scale down the spaced-letter identity name */
+  .id-title {
+    font-size: 2.2rem;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
+    line-height: 1.2;
+    padding: 0 12px;
+    white-space: nowrap;
+  }
+
+  .id-header-section {
+    padding: 48px 16px 36px;
+  }
+
+  .id-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 36px;
+    padding: 0 8px;
+  }
+
+  /* Trust row: 2x2 grid on mobile */
+  .id-trust-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 12px;
+    padding: 24px 16px;
+    justify-items: start;
+  }
+
+  .id-trust-item {
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .id-trust-item svg {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+
+  .id-trust-text {
+    font-size: 0.78rem;
+  }
+
+  .id-trust-text strong {
+    font-size: 0.85rem;
+  }
+
+  /* Cabin: stack vertically */
+  .id-cabin-section {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 48px 16px;
+  }
+
+  .id-cabin-content h2 {
+    font-size: 2.2rem;
+    margin-bottom: 24px;
+  }
+
+  .id-cabin-content h3 {
+    font-size: 0.8rem;
+  }
+
+  .id-cabin-tags {
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Materials: 1 column vertical on mobile — no cropping */
+  .id-materials-section {
+    padding: 48px 16px;
+  }
+
+  .id-materials-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 36px;
+  }
+
+  .id-materials-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .id-material-card {
+    height: auto;
+    min-height: auto;
+    border-radius: 10px;
+  }
+
+  .id-material-card img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* Configurator: stack */
+  .id-config-box {
+    grid-template-columns: 1fr;
+  }
+
+  .id-config-right {
+    border-left: none;
+    border-top: 1px solid var(--border);
+    padding: 28px 24px;
+  }
+
+  .id-config-left {
+    padding: 28px 20px;
+  }
+
+  .id-price-value {
+    font-size: 2.2rem;
+  }
+
+  .id-configurator-wrapper {
+    padding: 48px 16px;
+  }
+
+  /* Trust row wrapped already handled above */
   .id-form-row { grid-template-columns: 1fr; }
   .id-config-ticks { flex-wrap: wrap; gap: 12px; }
+}
+
+@media (max-width: 480px) {
+  .id-title {
+    font-size: 1.5rem;
+    letter-spacing: 0.2em;
+    text-indent: 0.2em;
+    white-space: nowrap;
+  }
+
+  .id-hero-carousel-3up {
+    height: 60vw;
+    min-height: 200px;
+    max-height: 300px;
+  }
+
+  .id-trust-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px 16px;
+  }
+
+  .id-trust-item {
+    align-items: center;
+  }
+
+  .id-cabin-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .id-materials-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .id-material-card img {
+    height: auto;
+  }
+
+  .id-header-section {
+    padding: 36px 12px 28px;
+  }
+
+  .id-form-group select {
+    font-size: 0.95rem;
+    padding: 13px;
+  }
+
+  .id-checkout-btn {
+    font-size: 0.85rem;
+    padding: 14px 12px;
+  }
 }

@@ -30,7 +30,8 @@ export default function Home() {
     const interval = setInterval(() => {
       if (!trackRef.current || isDragging) return;
       const track = trackRef.current;
-      const slideWidth = track.clientWidth / 3;
+      const slide = track.querySelector('.testimonial-slide');
+      const slideWidth = slide ? slide.clientWidth : (window.innerWidth <= 900 ? track.clientWidth : track.clientWidth / 3);
       const maxScroll = track.scrollWidth - track.clientWidth;
       if (track.scrollLeft >= maxScroll - 10) {
         track.scrollTo({ left: 0, behavior: 'smooth' });
@@ -42,11 +43,21 @@ export default function Home() {
   }, [isDragging]);
 
   const handlePrev = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: -(trackRef.current.clientWidth / 3), behavior: 'smooth' });
+    if (trackRef.current) {
+      const track = trackRef.current;
+      const slide = track.querySelector('.testimonial-slide');
+      const slideWidth = slide ? slide.clientWidth : (window.innerWidth <= 900 ? track.clientWidth : track.clientWidth / 3);
+      track.scrollBy({ left: -slideWidth, behavior: 'smooth' });
+    }
   };
   
   const handleNext = () => {
-    if (trackRef.current) trackRef.current.scrollBy({ left: (trackRef.current.clientWidth / 3), behavior: 'smooth' });
+    if (trackRef.current) {
+      const track = trackRef.current;
+      const slide = track.querySelector('.testimonial-slide');
+      const slideWidth = slide ? slide.clientWidth : (window.innerWidth <= 900 ? track.clientWidth : track.clientWidth / 3);
+      track.scrollBy({ left: slideWidth, behavior: 'smooth' });
+    }
   };
 
   const startDrag = (e) => {
@@ -293,7 +304,7 @@ export default function Home() {
           display: flex;
           white-space: nowrap;
           align-items: center;
-          animation: marquee-scroll 20s linear infinite;
+          animation: marquee-scroll 5s linear infinite;
         }
 
         .marquee-item {
@@ -529,12 +540,28 @@ export default function Home() {
         @media (max-width: 900px) {
           .hero-grid { grid-template-columns: 1fr; text-align: center; }
           .hero-text-block { max-width: 100%; margin: 0 auto; }
-          .hero-stats { justify-content: center; }
-          .upgrade-grid, .doorstep-grid { grid-template-columns: 1fr; gap: 32px; }
-          .upgrade-text-box { padding: 40px 24px; }
-          .testimonial-slide { min-width: 100%; }
-          .nav-btn { display: none; }
-          .doorstep-grid { padding: 32px 20px; }
+          .hero-stats { justify-content: center; border-left: none; border-top: 3px solid var(--accent-red); padding-left: 0; padding-top: 16px; flex-wrap: wrap; gap: 24px; }
+          .upgrade-grid, .doorstep-grid { grid-template-columns: 1fr; gap: 24px; }
+          .upgrade-text-box { padding: 32px 20px; }
+          .upgrade-title { font-size: 2rem; }
+          .testimonials-section { padding: 40px 12px 20px; }
+          .testimonials-heading { font-size: 1.6rem; }
+          .testimonials-carousel { gap: 8px; }
+          .testimonial-slide { min-width: 85vw; max-width: 85vw; padding: 6px; }
+          .nav-btn { width: 36px; height: 36px; font-size: 1.2rem; flex-shrink: 0; }
+          .doorstep-grid { padding: 28px 16px; }
+          .doorstep-text-box h2 { font-size: 2rem; }
+          .hero-main-title { font-size: 1.9rem; }
+          .hero-brand { font-size: 2.2rem; }
+          .upgrade-image-box { max-height: 260px; overflow: hidden; }
+          .upgrade-image-box img { object-fit: cover; width: 100%; height: 260px; }
+        }
+        @media (max-width: 480px) {
+          .hero-stats { gap: 16px; }
+          .stat-num { font-size: 1.6rem; }
+          .hero-main-title { font-size: 1.6rem; }
+          .testimonial-slide { min-width: 92vw; max-width: 92vw; }
+          .testimonial-card { padding: 20px 16px; }
         }
       `}</style>
     </div>

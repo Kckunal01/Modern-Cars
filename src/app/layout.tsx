@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display, Outfit } from "next/font/google";
 import "../index.css";
 import ClientWrapper from "../components/ClientWrapper";
+import { PostHogProvider } from "./providers";
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: '--font-playfair' });
@@ -26,10 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} ${playfair.variable} ${outfit.variable} antialiased`}>
-        <ClientWrapper>
-          {children}
-        </ClientWrapper>
-        <SpeedInsights />
+        <PostHogProvider>
+          <ClientWrapper>
+            {children}
+          </ClientWrapper>
+          <SpeedInsights />
+        </PostHogProvider>
       </body>
     </html>
   );

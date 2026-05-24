@@ -316,3 +316,43 @@ export async function send2HourReminderEmail({
     html
   });
 }
+
+export async function sendFeedbackRequest24h({ email, name, type, id }) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+      <h2>We'd love your feedback!</h2>
+      <p>Hi ${name || 'Customer'},</p>
+      <p>Thank you for choosing Modern Cars. Your recent ${type} (ID: ${id}) has been completed.</p>
+      <p>Could you please take a moment to share your feedback with us?</p>
+      <br/>
+      <p>— Modern Cars</p>
+    </div>
+  `;
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: [email],
+    subject: `Share your feedback on your Modern Cars ${type === 'order' ? 'Order' : 'Booking'}`,
+    html
+  });
+}
+
+export async function sendFeedbackReminder48h({ email, name, type, id }) {
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+      <h2>Friendly Reminder: Share your feedback</h2>
+      <p>Hi ${name || 'Customer'},</p>
+      <p>We recently completed your ${type} (ID: ${id}) and would love to know about your experience.</p>
+      <p>If you haven't already, please take a quick minute to share your feedback.</p>
+      <br/>
+      <p>— Modern Cars</p>
+    </div>
+  `;
+
+  await resend.emails.send({
+    from: FROM_EMAIL,
+    to: [email],
+    subject: `Reminder: Feedback for Modern Cars ${type === 'order' ? 'Order' : 'Booking'}`,
+    html
+  });
+}
