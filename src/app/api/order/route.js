@@ -88,6 +88,7 @@ export async function POST(req) {
       email,
       city: fullAddressCity,
       car_model: carModelStr,
+      checkout_completed: true,
     };
 
     console.log(
@@ -95,18 +96,36 @@ export async function POST(req) {
       customerPayload
     );
 
-    const {
-      data: customerData,
-      error: customerError,
-    } = await supabase
+    // Find existing customer by email to update instead of duplicate insert
+    const { data: existingCustomers, error: findCustErr } = await supabase
       .from('customers')
-      .insert([customerPayload])
-      .select()
-      .single();
+      .select('id')
+      .eq('email', email)
+      .limit(1);
+
+    let customerData, customerError;
+    if (!findCustErr && existingCustomers && existingCustomers.length > 0) {
+      const { data, error } = await supabase
+        .from('customers')
+        .update(customerPayload)
+        .eq('id', existingCustomers[0].id)
+        .select()
+        .single();
+      customerData = data;
+      customerError = error;
+    } else {
+      const { data, error } = await supabase
+        .from('customers')
+        .insert([customerPayload])
+        .select()
+        .single();
+      customerData = data;
+      customerError = error;
+    }
 
     if (customerError) {
       console.error(
-        'Supabase customer insert error:',
+        'Supabase customer insert/update error:',
         customerError
       );
 
@@ -210,6 +229,11 @@ export async function POST(req) {
           : 'standard',
 
       booking_id: bookingId,
+      // Abandonment tracking fields
+      checkout_started_at: new Date().toISOString(),
+      checkout_completed: false,
+      checkout_1h_sent: false,
+      checkout_24h_sent: false,
     };
 
     console.log(

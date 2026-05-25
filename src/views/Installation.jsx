@@ -13,6 +13,28 @@ export default function Installation({ incrementFormSubmissions }) {
   const [errors, setErrors] = useState({});
   const [availableSlots, setAvailableSlots] = useState([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const abandonmentTracked = React.useRef(false);
+
+  const handleEmailBlur = async () => {
+    const email = formData.email.trim();
+    if (!email || !email.includes('@') || abandonmentTracked.current) return;
+
+    try {
+      abandonmentTracked.current = true;
+      await fetch('/api/abandonment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          type: 'booking',
+          name: formData.name,
+          phone: formData.phone
+        })
+      });
+    } catch (err) {
+      console.error('Failed to trigger booking abandonment tracking:', err);
+    }
+  };
 
   const brands = Object.keys(carBrands);
   const models = formData.brand ? Object.keys(carBrands[formData.brand].models) : [];
@@ -285,7 +307,7 @@ useEffect(() => {
                   {errors.phone && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.phone}</span>}
                 </div>
                 <div>
-                  <input type="email" name="email" className={`input-field${errors.email ? ' error' : ''}`} placeholder="Email Address *" value={formData.email} required onChange={handleChange} />
+                  <input type="email" name="email" className={`input-field${errors.email ? ' error' : ''}`} placeholder="Email Address *" value={formData.email} required onChange={handleChange} onBlur={handleEmailBlur} />
                   {errors.email && <span style={{ color: 'var(--accent-red)', fontSize: '0.72rem', display: 'block', marginTop: '4px' }}>{errors.email}</span>}
                 </div>
               </div>

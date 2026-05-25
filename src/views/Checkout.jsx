@@ -34,6 +34,28 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedTrackingId, setCompletedTrackingId] = useState(null);
+  const abandonmentTracked = React.useRef(false);
+
+  const handleEmailBlur = async () => {
+    const email = formData.email.trim();
+    if (!email || !email.includes('@') || abandonmentTracked.current) return;
+
+    try {
+      abandonmentTracked.current = true;
+      await fetch('/api/abandonment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          type: 'checkout',
+          name: formData.name,
+          phone: formData.phone
+        })
+      });
+    } catch (err) {
+      console.error('Failed to trigger checkout abandonment tracking:', err);
+    }
+  };
 
   const isLucknow = formData.city.toLowerCase().trim() === 'lucknow';
 
@@ -175,7 +197,7 @@ export default function Checkout({ setCurrentPage, selectedIdentity: identityPro
                 </div>
                 <div className="form-group" style={{ marginTop: '16px' }}>
                   <label className="field-label">Email Address <span className="text-red">*</span></label>
-                  <input type="email" name="email" className={`input-field${errors.email ? ' error' : ''}`} placeholder="Enter your email" value={formData.email} onChange={handleChange} />
+                  <input type="email" name="email" className={`input-field${errors.email ? ' error' : ''}`} placeholder="Enter your email" value={formData.email} onChange={handleChange} onBlur={handleEmailBlur} />
                   {errors.email && <span className="error-text">{errors.email}</span>}
                 </div>
                 <p style={{ fontSize: '0.72rem', color: '#999', marginTop: '4px' }}>Order updates will be sent via WhatsApp and Email.</p>
