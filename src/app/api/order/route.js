@@ -89,6 +89,7 @@ export async function POST(req) {
       city: fullAddressCity,
       car_model: carModelStr,
       checkout_completed: true,
+      ...(addDoorstep ? { booking_completed: true } : {}),
     };
 
     console.log(

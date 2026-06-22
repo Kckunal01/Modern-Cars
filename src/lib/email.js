@@ -20,41 +20,28 @@ export async function sendOrderConfirmationEmail(data) {
 
     const response = await resend.emails.send({
       from: FROM_EMAIL,
-
-      // TEMP
       to: [data.email],
-
       subject: 'Order Confirmed - Modern Cars',
-
       html: `
-        <h1>Order Confirmed</h1>
-
-        <p>Order email system works.</p>
-
-        <p>
-          <strong>Customer:</strong>
-          ${data?.name || 'Unknown'}
-        </p>
-
-        <p>
-          <strong>Email:</strong>
-          ${data?.email || 'N/A'}
-        </p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #0d0d0d; border-bottom: 2px solid #c0a060; padding-bottom: 10px;">Order Confirmed</h2>
+          <p>Hi ${data?.name || 'Customer'},</p>
+          <p>Thank you for your order! Your upgrade is being prepared.</p>
+          <p><strong>Tracking ID:</strong> ${data?.trackingId || 'N/A'}</p>
+          <p><strong>Vehicle:</strong> ${data?.brand || ''} ${data?.model || ''} ${data?.year || ''}</p>
+          <p><strong>Product Selected:</strong> ${data?.identity || 'N/A'}</p>
+          <p><strong>Fulfillment Type:</strong> ${data?.fulfillmentType || 'Standard Delivery'}</p>
+          <p>If you have any questions, feel free to reply to this email or reach us at support@moderncars.in.</p>
+          <br/>
+          <p>— Modern Cars Team</p>
+        </div>
       `,
     });
 
-    console.log(
-      'ORDER EMAIL RESPONSE:',
-      response
-    );
-
+    console.log('ORDER EMAIL RESPONSE:', response);
     return response;
   } catch (err) {
-    console.error(
-      'ORDER EMAIL FAILED FULL ERROR:',
-      err
-    );
-
+    console.error('ORDER EMAIL FAILED FULL ERROR:', err);
     return null;
   }
 }
@@ -69,41 +56,28 @@ export async function sendBookingConfirmationEmail(data) {
 
     const response = await resend.emails.send({
       from: FROM_EMAIL,
-
-      // TEMP
       to: [data.email],
-
       subject: 'Booking Confirmed - Modern Cars',
-
       html: `
-        <h1>Booking Confirmed</h1>
-
-        <p>Booking email system works.</p>
-
-        <p>
-          <strong>Customer:</strong>
-          ${data?.name || 'Unknown'}
-        </p>
-
-        <p>
-          <strong>Email:</strong>
-          ${data?.email || 'N/A'}
-        </p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #0d0d0d; border-bottom: 2px solid #c0a060; padding-bottom: 10px;">Booking Confirmed</h2>
+          <p>Hi ${data?.name || 'Customer'},</p>
+          <p>Your doorstep installation appointment has been successfully scheduled.</p>
+          <h3>Booking Details</h3>
+          <p><strong>Date:</strong> ${data?.doorstepDate || 'N/A'}</p>
+          <p><strong>Time Slot:</strong> ${data?.doorstepTime || 'N/A'}</p>
+          <p><strong>Vehicle:</strong> ${data?.brand || ''} ${data?.model || ''} ${data?.year || ''}</p>
+          <p>Our installation team will arrive within your chosen time slot. Please ensure the vehicle is parked in an accessible location.</p>
+          <br/>
+          <p>— Modern Cars Team</p>
+        </div>
       `,
     });
 
-    console.log(
-      'BOOKING EMAIL RESPONSE:',
-      response
-    );
-
+    console.log('BOOKING EMAIL RESPONSE:', response);
     return response;
   } catch (err) {
-    console.error(
-      'BOOKING EMAIL FAILED FULL ERROR:',
-      err
-    );
-
+    console.error('BOOKING EMAIL FAILED FULL ERROR:', err);
     return null;
   }
 }
@@ -112,40 +86,38 @@ export async function sendBookingConfirmationEmail(data) {
    ADMIN ORDER ALERT
 ========================= */
 
-export async function sendAdminOrderAlert() {
+export async function sendAdminOrderAlert(data) {
   try {
-    console.log(
-      'ADMIN ORDER ALERT TRIGGERED'
-    );
-
+    console.log('ADMIN ORDER ALERT TRIGGERED');
+    const adminEmail = process.env.ADMIN_EMAIL || 'moderncars24@gmail.com';
     const response = await resend.emails.send({
       from: FROM_EMAIL,
-      to: [data.email],
-
-      subject: 'ADMIN ORDER TEST',
-
+      to: [adminEmail],
+      subject: `[ADMIN ALERT] New Order Received - ${data?.orderId || 'N/A'}`,
       html: `
-        <h1>Admin Order Alert Works</h1>
-
-        <p>
-          Modern Cars admin order alert
-          triggered.
-        </p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #0d0d0d; border-bottom: 2px solid #c0a060; padding-bottom: 10px;">New Order Alert</h2>
+          <p><strong>Order ID:</strong> ${data?.orderId || 'N/A'}</p>
+          <p><strong>Tracking ID:</strong> ${data?.trackingId || 'N/A'}</p>
+          <p><strong>Product/Identity:</strong> ${data?.product || 'N/A'}</p>
+          <p><strong>Car Model:</strong> ${data?.carModel || 'N/A'}</p>
+          <p><strong>Fulfillment Type:</strong> ${data?.fulfillmentType || 'standard'}</p>
+          <p><strong>Payment Method:</strong> ${data?.paymentMethod || 'N/A'} (${data?.paymentStatus || 'N/A'})</p>
+          <p><strong>Amount:</strong> ₹${data?.amount || 0}</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+          <h3>Customer Details</h3>
+          <p><strong>Name:</strong> ${data?.name || 'Unknown'}</p>
+          <p><strong>Phone:</strong> ${data?.phone || 'N/A'}</p>
+          <p><strong>Email:</strong> ${data?.email || 'N/A'}</p>
+          <p><strong>Address:</strong> ${data?.city || 'N/A'}</p>
+        </div>
       `,
     });
 
-    console.log(
-      'ADMIN ORDER RESPONSE:',
-      response
-    );
-
+    console.log('ADMIN ORDER RESPONSE:', response);
     return response;
   } catch (err) {
-    console.error(
-      'ADMIN ORDER FAILED FULL ERROR:',
-      err
-    );
-
+    console.error('ADMIN ORDER FAILED FULL ERROR:', err);
     return null;
   }
 }
@@ -154,40 +126,36 @@ export async function sendAdminOrderAlert() {
    ADMIN BOOKING ALERT
 ========================= */
 
-export async function sendAdminBookingAlert() {
+export async function sendAdminBookingAlert(data) {
   try {
-    console.log(
-      'ADMIN BOOKING ALERT TRIGGERED'
-    );
-
+    console.log('ADMIN BOOKING ALERT TRIGGERED');
+    const adminEmail = process.env.ADMIN_EMAIL || 'moderncars24@gmail.com';
     const response = await resend.emails.send({
       from: FROM_EMAIL,
-      to: [data.email],
-
-      subject: 'ADMIN BOOKING TEST',
-
+      to: [adminEmail],
+      subject: `[ADMIN ALERT] New Booking Scheduled - ID: ${data?.bookingId || 'N/A'}`,
       html: `
-        <h1>Admin Booking Alert Works</h1>
-
-        <p>
-          Modern Cars admin booking alert
-          triggered.
-        </p>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #0d0d0d; border-bottom: 2px solid #c0a060; padding-bottom: 10px;">New Booking Alert</h2>
+          <p><strong>Booking ID:</strong> ${data?.bookingId || 'N/A'}</p>
+          <p><strong>Scheduled Date:</strong> ${data?.bookingDate || 'N/A'}</p>
+          <p><strong>Scheduled Time:</strong> ${data?.bookingTime || 'N/A'}</p>
+          <p><strong>Services:</strong> ${data?.services || 'N/A'}</p>
+          <p><strong>Car Model:</strong> ${data?.vehicle || 'N/A'}</p>
+          <p><strong>Notes:</strong> ${data?.notes || 'N/A'}</p>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;"/>
+          <h3>Customer Details</h3>
+          <p><strong>Name:</strong> ${data?.name || 'Unknown'}</p>
+          <p><strong>Phone:</strong> ${data?.phone || 'N/A'}</p>
+          <p><strong>Email:</strong> ${data?.email || 'N/A'}</p>
+        </div>
       `,
     });
 
-    console.log(
-      'ADMIN BOOKING RESPONSE:',
-      response
-    );
-
+    console.log('ADMIN BOOKING RESPONSE:', response);
     return response;
   } catch (err) {
-    console.error(
-      'ADMIN BOOKING FAILED FULL ERROR:',
-      err
-    );
-
+    console.error('ADMIN BOOKING FAILED FULL ERROR:', err);
     return null;
   }
 }
@@ -196,37 +164,25 @@ export async function sendAdminBookingAlert() {
    TEST EMAIL
 ========================= */
 
-export async function testAdminEmail() {
+export async function testAdminEmail(data) {
   try {
     console.log('TEST EMAIL TRIGGERED');
-
+    const adminEmail = process.env.ADMIN_EMAIL || 'moderncars24@gmail.com';
+    const emailToUse = data?.email || adminEmail;
     const response = await resend.emails.send({
       from: FROM_EMAIL,
-      to: [data.email],
-
+      to: [emailToUse],
       subject: 'TEST EMAIL - MODERN CARS',
-
       html: `
         <h1>It Works</h1>
-
-        <p>
-          Resend pipeline is working.
-        </p>
+        <p>Resend pipeline is working.</p>
       `,
     });
 
-    console.log(
-      'TEST EMAIL RESPONSE:',
-      response
-    );
-
+    console.log('TEST EMAIL RESPONSE:', response);
     return response;
   } catch (err) {
-    console.error(
-      'TEST EMAIL FAILED FULL ERROR:',
-      err
-    );
-
+    console.error('TEST EMAIL FAILED FULL ERROR:', err);
     return null;
   }
 }
